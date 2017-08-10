@@ -250,6 +250,9 @@ abstract class AbstractQueryBuilder
      */
     protected function isAggregateFunction($name)
     {
+        if (is_array($name)) {
+            $name = current($name);
+        }
         return in_array(strtoupper($name), QueryBuilderInterface::AGGREGATE_FUNCTIONS);
     }
 
