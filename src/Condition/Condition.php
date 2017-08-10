@@ -102,7 +102,7 @@ class Condition implements ConditionInterface
         $baseParameterName = null;
         foreach ($data as $key => $value) {
             if (!array_key_exists($key, $this->data)) {
-                throw new ContainerException(sprintf('Property %s not exists in %s', $key, self::class));
+                throw new ContainerException(sprintf('Property "%s" not exists in "%s"', $key, self::class));
             } elseif (self::COMPARISON_OPERATOR_NAME === $key and !isset(self::COMPARISON_OPERATORS[$value])) {
                 throw new ContainerException(sprintf('Comparison operator "%s" not supported', $value));
             }
@@ -113,17 +113,25 @@ class Condition implements ConditionInterface
             $this->data[$key] = $value;
         }
 
+        $value = $data[self::VALUE_OPERATOR_NAME];
+
+        if (null === $value) {
+            return;
+        }
+
         if (in_array($data[self::COMPARISON_OPERATOR_NAME], [self::TOKEN_BETWEEN, self::TOKEN_NOT_BETWEEN])) {
             $value = $data[self::VALUE_OPERATOR_NAME];
-            if (!is_array($value)) {
-                throw new ContainerException('The value must be an array');
-            } elseif (2 !== count($value)) {
-                throw new ContainerException('The value must contain an array of two elements');
-            }
-            $i = 0;
-            foreach ($data[self::VALUE_OPERATOR_NAME] as $datum) {
-                $this->parameters[$baseParameterName.'_'.$i] = $datum;
-                $i++;
+            if (null !== $value) {
+                if (!is_array($value)) {
+                    throw new ContainerException('The value must be an array');
+                } elseif (2 !== count($value)) {
+                    throw new ContainerException('The value must contain an array of two elements');
+                }
+                $i = 0;
+                foreach ($data[self::VALUE_OPERATOR_NAME] as $datum) {
+                    $this->parameters[$baseParameterName.'_'.$i] = $datum;
+                    $i++;
+                }
             }
         } else {
             $this->parameters[$baseParameterName] = $data[self::VALUE_OPERATOR_NAME];
@@ -215,7 +223,7 @@ class Condition implements ConditionInterface
 
             return sprintf($format, $property, $this->getComparisonOperator(), $parameter);
 
-        } elseif (in_array($operator, [self::TOKEN_BETWEEN, self::TOKEN_NOT_BETWEEN])) {
+        } elseif (in_array($operator, [self::TOKEN_BETWEEN, self::TOKEN_NOT_BETWEEN]) and count($this->parameters)) {
             return sprintf(
                 '%s %s %s',
                 $property,
