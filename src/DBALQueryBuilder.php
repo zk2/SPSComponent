@@ -198,6 +198,9 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
      */
     private function aggregate(ConditionInterface $condition)
     {
+        if(!$condition->getParameters()) {
+            return '';
+        }
         $this->aggNumber++;
         $prefix = str_repeat('_', $this->aggNumber);
         $qb = clone $this->queryBuilder;
