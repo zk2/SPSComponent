@@ -180,6 +180,10 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
                 $this->parametersTypes[$paramName] = $this->inferType($paramValue);
             }
         }
+        if (!$where = $this->trimAndOr($where)) {
+
+            return null;
+        }
 
         return sprintf(
             '%s%s',

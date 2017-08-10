@@ -226,6 +226,10 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
                 $this->parameters->add($parameter);
             }
         }
+        if (!$where = $this->trimAndOr($where)) {
+
+            return null;
+        }
 
         return sprintf(
             '%s%s',
