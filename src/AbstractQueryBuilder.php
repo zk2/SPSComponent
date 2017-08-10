@@ -66,6 +66,11 @@ abstract class AbstractQueryBuilder
     protected $additionalFunctions = [];
 
     /**
+     * @var bool
+     */
+    protected $withoutTotalResultCount = false;
+
+    /**
      * @param ORMQueryBuilder|DBALQueryBuilder $queryBuilder
      */
     public function __construct($queryBuilder)
@@ -208,6 +213,22 @@ abstract class AbstractQueryBuilder
     }
 
     /**
+     * @return bool
+     */
+    public function isWithoutTotalResultCount()
+    {
+        return $this->withoutTotalResultCount;
+    }
+
+    /**
+     * @param bool $withoutTotalResultCount
+     */
+    public function setWithoutTotalResultCount($withoutTotalResultCount)
+    {
+        $this->withoutTotalResultCount = (bool)$withoutTotalResultCount;
+    }
+
+    /**
      * @param ORMQueryBuilder|DBALQueryBuilder $qb
      * @param array|null $parts
      * @return ORMQueryBuilder|DBALQueryBuilder
@@ -253,13 +274,6 @@ abstract class AbstractQueryBuilder
      */
     protected function addOrderBy($property, $direction)
     {
-        $connection = $this->getConnection();
-        $databasePlatformName = $connection->getDatabasePlatform()->getName();
-        $direction = strtoupper($direction);
-        switch ($databasePlatformName) {
-            case 'postgresql':
-                //$direction = preg_replace(['/asc/i', '/desc/i'], ['ASC NULLS FIRST', 'DESC NULLS LAST'], $direction);
-        }
         $this->queryBuilder->addOrderBy($property, $direction);
     }
 

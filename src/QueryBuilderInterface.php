@@ -66,4 +66,14 @@ interface QueryBuilderInterface
      */
     public function addCustomFunction($name, $class, $type);
 
+    /**
+     * @return bool
+     */
+    public function isWithoutTotalResultCount();
+
+    /**
+     * @param bool $withoutTotalResultCount
+     */
+    public function setWithoutTotalResultCount($withoutTotalResultCount);
+
 }

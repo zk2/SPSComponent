@@ -52,12 +52,13 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
      */
     public function getResult($limit = 0, $offset = 0)
     {
-        if ($limit > 0) {
-            $this->limitOffset($limit, $offset);
+        if ($limit > 0 and false === $this->limitOffset($limit, $offset)) {
+
+            return [];
         }
+
         $stmt = $this->queryBuilder->execute();
         $this->result = $stmt->fetchAll();
-        //printf("\n%s\n", $this->queryBuilder->getSQL());
 
         return $this->result;
     }
@@ -83,13 +84,13 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
     /**
      * @param int $limit
      * @param int $offset
-     * @return $this
+     * @return bool
      */
     private function limitOffset($limit, $offset)
     {
-        if (!$this->count()) {
+        if (!$this->withoutTotalResultCount and !$this->count()) {
 
-            return $this;
+            return false;
         }
 
         $qb = clone $this->queryBuilder;
@@ -114,7 +115,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
         );
         if (!$ids) {
 
-            return $this;
+            return false;
         }
 
         $this->queryBuilder
@@ -123,7 +124,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
             ->where(sprintf("%s IN (:_sps_ids_)", $this->aliasDotPrimary()))
             ->setParameters(['_sps_ids_' => $ids], ['_sps_ids_' => $this->inferType($ids)]);
 
-        return $this;
+        return true;
     }
 
     /**

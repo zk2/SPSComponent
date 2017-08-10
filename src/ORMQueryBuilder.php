@@ -57,14 +57,15 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
      */
     public function getResult($limit = 0, $offset = 0)
     {
-        if ($limit > 0) {
-            $this->limitOffset($limit, $offset);
+        if ($limit > 0 and false === $this->limitOffset($limit, $offset)) {
+
+            return [];
         }
+
         $this->result = $this->queryBuilder
             ->getQuery()
             ->setHint(Query::HINT_CUSTOM_OUTPUT_WALKER, SortableNullsWalker::class)
             ->getResult();
-        //printf("\n%s\n", $this->queryBuilder->getQuery()->getSQL());
 
         return $this->result;
     }
@@ -75,17 +76,19 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
      */
     private function count()
     {
-        $qb = clone $this->queryBuilder;
-        $this->resetSqlParts($qb, ['select', 'groupBy', 'orderBy'])
-            ->setFirstResult(null)
-            ->setMaxResults(null)
-            ->select(sprintf('COUNT(DISTINCT %s)', $this->aliasDotPrimary()));
-        try {
-            $this->totalResultCount = $qb->getQuery()->getSingleScalarResult();
-        } catch (NoResultException $e) {
-            $this->totalResultCount = 0;
-        } catch (\Exception $e) {
-            throw new QueryBuilderException($e->getMessage());
+        if (!$this->withoutTotalResultCount) {
+            $qb = clone $this->queryBuilder;
+            $this->resetSqlParts($qb, ['select', 'groupBy', 'orderBy'])
+                ->setFirstResult(null)
+                ->setMaxResults(null)
+                ->select(sprintf('COUNT(DISTINCT %s)', $this->aliasDotPrimary()));
+            try {
+                $this->totalResultCount = $qb->getQuery()->getSingleScalarResult();
+            } catch (NoResultException $e) {
+                $this->totalResultCount = 0;
+            } catch (\Exception $e) {
+                throw new QueryBuilderException($e->getMessage());
+            }
         }
 
         return $this->totalResultCount;
@@ -94,13 +97,13 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
     /**
      * @param int $limit
      * @param int $offset
-     * @return $this
+     * @return bool
      */
     private function limitOffset($limit, $offset)
     {
-        if (!$this->count()) {
+        if (!$this->withoutTotalResultCount and !$this->count()) {
 
-            return $this;
+            return false;
         }
 
         $qb = clone $this->queryBuilder;
@@ -115,7 +118,6 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
                     continue;
                 }
                 $arr = explode(' ', $part);
-                //$field = stristr($part, ' ', true);
                 $field = $arr[0];
                 if ($field == $this->aliasDotPrimary()) {
                     continue;
@@ -135,7 +137,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
         );
         if (!$ids) {
 
-            return $this;
+            return false;
         }
 
         $this->queryBuilder
@@ -144,7 +146,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
             ->where(sprintf("%s IN (:_sps_ids_)", $this->aliasDotPrimary()))
             ->setParameters(['_sps_ids_' => $ids]);
 
-        return $this;
+        return true;
     }
 
     /**
