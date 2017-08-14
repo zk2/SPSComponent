@@ -1,4 +1,12 @@
 <?php
+/**
+ * This file is part of the SpsComponent package.
+ *
+ * (c) Evgeniy Budanov <budanov.ua@gmail.comm> 2017.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Zk2\SpsComponent;
 
@@ -14,6 +22,12 @@ use Zk2\SpsComponent\Condition\ContainerInterface;
  */
 class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterface
 {
+
+    /**
+     * @var array
+     */
+    protected $parameters;
+
     /**
      * @var array
      */
@@ -30,6 +44,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
 
     /**
      * @param ContainerInterface $container
+     *
      * @return $this
      */
     public function buildWhere(ContainerInterface $container)
@@ -48,12 +63,12 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
     /**
      * @param int $limit
      * @param int $offset
+     *
      * @return array
      */
     public function getResult($limit = 0, $offset = 0)
     {
         if ($limit > 0 and false === $this->limitOffset($limit, $offset)) {
-
             return [];
         }
 
@@ -65,6 +80,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
 
     /**
      * @return int
+     *
      * @throws QueryBuilderException
      */
     private function count()
@@ -84,12 +100,12 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
     /**
      * @param int $limit
      * @param int $offset
+     *
      * @return bool
      */
     private function limitOffset($limit, $offset)
     {
         if (!$this->withoutTotalResultCount and !$this->count()) {
-
             return false;
         }
 
@@ -100,7 +116,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
 
         foreach ($this->getSqlPart($qb, 'orderBy') as $part) {
             $field = stristr($part, ' ', true);
-            if ($field == $this->aliasDotPrimary()) {
+            if ($field === $this->aliasDotPrimary()) {
                 continue;
             }
             $qb->addSelect($field);
@@ -114,7 +130,6 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
             $stmt->fetchAll()
         );
         if (!$ids) {
-
             return false;
         }
 
@@ -129,6 +144,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
 
     /**
      * @param ContainerInterface $container
+     *
      * @return string
      */
     private function doBuildWhere(ContainerInterface $container)
@@ -147,7 +163,6 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
             }
         }
         if (!$condition = $this->trimAndOr($condition)) {
-
             return null;
         }
 
@@ -160,7 +175,9 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
 
     /**
      * @param ContainerInterface $container
+     *
      * @return string
+     *
      * @throws ContainerException
      */
     private function buildCondition(ContainerInterface $container)
@@ -182,7 +199,6 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
             }
         }
         if (!$where = $this->trimAndOr($where)) {
-
             return null;
         }
 
@@ -195,11 +211,12 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
 
     /**
      * @param ConditionInterface $condition
+     *
      * @return string
      */
     private function aggregate(ConditionInterface $condition)
     {
-        if(!$condition->getParameters()) {
+        if (!$condition->getParameters()) {
             return '';
         }
         $this->aggNumber++;
@@ -222,6 +239,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
                 );
                 $subPart['joinAlias'] = $prefix.$subPart['joinAlias'];
                 $newJoin = [$prefix.$rootAlias => $subPart];
+                /** @var string $newJoin -- HOOK :: The vendor function requires a "@string" parameter */
                 $qb->add('join', $newJoin, true);
             }
         }
@@ -231,7 +249,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
             $newParameters[str_replace(':', ':'.$prefix, $paramName)] = $paramValue;
         }
 
-        if (count($newParameters) == 2 and stripos($condition->getComparisonOperator(), Condition::BETWEEN) !== false) {
+        if (count($newParameters) === 2 and stripos($condition->getComparisonOperator(), Condition::BETWEEN) !== false) {
             $newParameterName = implode(' AND ', array_keys($newParameters));
         } else {
             $newParameterName = key($newParameters);
@@ -256,6 +274,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
 
     /**
      * @return $this
+     *
      * @throws QueryBuilderException
      */
     private function initRoot()

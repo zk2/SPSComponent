@@ -1,10 +1,20 @@
 <?php
+/**
+ * This file is part of the SpsComponent package.
+ *
+ * (c) Evgeniy Budanov <budanov.ua@gmail.comm> 2017.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Zk2\SpsComponent\Condition;
 
-
 use Doctrine\Common\Collections\ArrayCollection;
 
+/**
+ * Class Container
+ */
 class Container implements ContainerInterface
 {
     /**
@@ -28,15 +38,16 @@ class Container implements ContainerInterface
     private $collectionOfConditions;
 
     /**
-     * @param array $data
+     * @param array  $data
      * @param string $platform
+     *
      * @return self
+     *
      * @throws ContainerException
      */
     public static function create($data, $platform)
     {
         if (!$data) {
-
             return new self(self::COLLECTION_NAME, $platform);
         }
 
@@ -95,6 +106,7 @@ class Container implements ContainerInterface
 
     /**
      * @param Container $container
+     *
      * @return self
      */
     public function addToCollection(Container $container)
@@ -121,8 +133,8 @@ class Container implements ContainerInterface
      */
     private function __construct($type, $platform)
     {
-        $this->type = $type;
-        if (self::COLLECTION_NAME == $type) {
+        $this->type = (string) $type;
+        if (self::COLLECTION_NAME === $type) {
             $this->collectionOfConditions = new ArrayCollection();
         } else {
             $this->condition = new Condition($platform);
@@ -131,7 +143,9 @@ class Container implements ContainerInterface
 
     /**
      * @param string $andOr
+     *
      * @return self
+     *
      * @throws ContainerException
      */
     private function setAndOr($andOr)

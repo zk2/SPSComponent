@@ -1,10 +1,20 @@
 <?php
+/**
+ * This file is part of the SpsComponent package.
+ *
+ * (c) Evgeniy Budanov <budanov.ua@gmail.comm> 2017.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Zk2\SpsComponent\Condition;
 
-
 use Zk2\SpsComponent\Doctrine\FullTextSearchFunction;
 
+/**
+ * Interface ConditionInterface
+ */
 interface ConditionInterface
 {
     const EQUALS = '=';
@@ -119,6 +129,7 @@ interface ConditionInterface
 
     /**
      * @param int $number
+     *
      * @return void
      */
     public function reconfigureParameters($number);
@@ -135,12 +146,14 @@ interface ConditionInterface
 
     /**
      * @param array $data
+     *
      * @throws ContainerException
      */
     public function setData(array $data);
 
     /**
      * @return string
+     *
      * @throws ContainerException
      */
     public function buildCondition();

@@ -1,4 +1,12 @@
 <?php
+/**
+ * This file is part of the SpsComponent package.
+ *
+ * (c) Evgeniy Budanov <budanov.ua@gmail.comm> 2017.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Zk2\SpsComponent;
 
@@ -22,9 +30,17 @@ use Zk2\SpsComponent\Doctrine\SortableNullsWalker;
  */
 class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterface
 {
+
+    /**
+     * @var ArrayCollection|Parameter[]
+     */
+    protected $parameters;
+
     /**
      * ORMQueryBuilder constructor.
+     *
      * @param QueryBuilder $queryBuilder
+     *
      * @throws QueryBuilderException
      */
     public function __construct(QueryBuilder $queryBuilder)
@@ -35,6 +51,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
 
     /**
      * @param ContainerInterface $container
+     *
      * @return $this
      */
     public function buildWhere(ContainerInterface $container)
@@ -53,12 +70,12 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
     /**
      * @param int $limit
      * @param int $offset
+     *
      * @return array
      */
     public function getResult($limit = 0, $offset = 0)
     {
         if ($limit > 0 and false === $this->limitOffset($limit, $offset)) {
-
             return [];
         }
 
@@ -72,6 +89,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
 
     /**
      * @return int
+     *
      * @throws QueryBuilderException
      */
     private function count()
@@ -97,12 +115,12 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
     /**
      * @param int $limit
      * @param int $offset
+     *
      * @return bool
      */
     private function limitOffset($limit, $offset)
     {
         if (!$this->withoutTotalResultCount and !$this->count()) {
-
             return false;
         }
 
@@ -118,8 +136,8 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
                     continue;
                 }
                 $arr = explode(' ', $part);
-                $field = $arr[0];
-                if ($field == $this->aliasDotPrimary()) {
+                $field = (string) $arr[0];
+                if ($this->aliasDotPrimary() === $field) {
                     continue;
                 }
                 $qb->addSelect($field);
@@ -136,7 +154,6 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
                 ->getResult()
         );
         if (!$ids) {
-
             return false;
         }
 
@@ -151,6 +168,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
 
     /**
      * @return $this
+     *
      * @throws QueryBuilderException
      */
     private function initRoot()
@@ -172,6 +190,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
 
     /**
      * @param ContainerInterface $container
+     *
      * @return string
      */
     private function doBuildWhere(ContainerInterface $container)
@@ -190,7 +209,6 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
             }
         }
         if (!$condition = $this->trimAndOr($condition)) {
-
             return null;
         }
 
@@ -203,7 +221,9 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
 
     /**
      * @param ContainerInterface $container
+     *
      * @return string
+     *
      * @throws ContainerException
      */
     private function buildCondition(ContainerInterface $container)
@@ -229,7 +249,6 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
             }
         }
         if (!$where = $this->trimAndOr($where)) {
-
             return null;
         }
 
@@ -242,11 +261,12 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
 
     /**
      * @param ConditionInterface $condition
+     *
      * @return string
      */
     private function aggregate(ConditionInterface $condition)
     {
-        if(!$condition->getParameters()) {
+        if (!$condition->getParameters()) {
             return '';
         }
         $this->aggNumber++;
@@ -266,7 +286,9 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
             /** @var Join $subPart */
             foreach ($joinPart as $subPart) {
                 $join = new Join(
-                    $subPart->getJoinType(), $prefix.$subPart->getJoin(), $prefix.$subPart->getAlias()
+                    $subPart->getJoinType(),
+                    $prefix.$subPart->getJoin(),
+                    $prefix.$subPart->getAlias()
                 );
                 /** @var Base $newJoin */
                 $newJoin = [$prefix.$rootAlias => $join];
@@ -279,7 +301,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
             $newParameters[str_replace(':', ':'.$prefix, $paramName)] = $paramValue;
         }
 
-        if (count($newParameters) == 2 and stripos($condition->getComparisonOperator(), Condition::BETWEEN) !== false) {
+        if (count($newParameters) === 2 and stripos($condition->getComparisonOperator(), Condition::BETWEEN) !== false) {
             $newParameterName = implode(' AND ', array_keys($newParameters));
         } else {
             $newParameterName = key($newParameters);

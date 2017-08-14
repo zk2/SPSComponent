@@ -1,4 +1,12 @@
 <?php
+/**
+ * This file is part of the SpsComponent package.
+ *
+ * (c) Evgeniy Budanov <budanov.ua@gmail.comm> 2017.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Tests\Entity;
 
@@ -34,7 +42,7 @@ class CountryLanguage
     private $lang;
 
     /**
-     * @var boolean
+     * @var bool
      *
      * @ORM\Column(name="is_official",  type="boolean", options={"default": 0})
      */

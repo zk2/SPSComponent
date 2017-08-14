@@ -1,13 +1,22 @@
 <?php
+/**
+ * This file is part of the SpsComponent package.
+ *
+ * (c) Evgeniy Budanov <budanov.ua@gmail.comm> 2017.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Zk2\SpsComponent;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder as DBALQueryBuilder;
 use Doctrine\ORM\QueryBuilder as ORMQueryBuilder;
-use Doctrine\ORM\Query\Parameter;
 
+/**
+ * Class AbstractQueryBuilder
+ */
 abstract class AbstractQueryBuilder
 {
     /**
@@ -31,17 +40,12 @@ abstract class AbstractQueryBuilder
     protected $result = [];
 
     /**
-     * @var ArrayCollection|Parameter[]|array
-     */
-    protected $parameters;
-
-    /**
      * @var string
      */
     protected $condition = '';
 
     /**
-     * @var integer
+     * @var int
      */
     protected $aggNumber = 0;
 
@@ -104,6 +108,7 @@ abstract class AbstractQueryBuilder
 
     /**
      * @param array $fields
+     *
      * @return $this
      */
     public function buildOrderBy(array $fields)
@@ -122,6 +127,7 @@ abstract class AbstractQueryBuilder
 
     /**
      * @param string $rootEntity
+     *
      * @return null|string
      */
     public function getPrimaryKeyName($rootEntity)
@@ -131,18 +137,20 @@ abstract class AbstractQueryBuilder
         $query = null;
         switch ($databasePlatformName) {
             case 'postgresql':
-                $query = "SELECT a.attname FROM pg_index i "
-                    ."JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey) "
-                    ."WHERE  i.indrelid = '".$rootEntity."'::regclass AND i.indisprimary";
-                break;
+                $query = "SELECT a.attname FROM pg_index i 
+                    JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey) 
+                    WHERE  i.indrelid = '".$rootEntity."'::regclass AND i.indisprimary";
+                $stmt = $connection->executeQuery($query);
+
+                return $stmt->fetchColumn();
             case 'mysql':
-                $query = "SELECT k.column_name FROM information_schema.table_constraints t "
-                    ."JOIN information_schema.key_column_usage k "
-                    ."USING(constraint_name,table_schema,table_name) "
-                    ." WHERE t.constraint_type='PRIMARY KEY' "
-                    ."AND t.table_schema='".$connection->getDatabase()."' "
-                    ."AND t.table_name='".$rootEntity."';";
-                break;
+                $query = "SELECT k.column_name FROM information_schema.table_constraints t 
+                    JOIN information_schema.key_column_usage k USING(constraint_name,table_schema,table_name) 
+                    WHERE t.constraint_type='PRIMARY KEY' AND t.table_schema='".$connection->getDatabase()."' 
+                    AND t.table_name='".$rootEntity."';";
+                $stmt = $connection->executeQuery($query);
+
+                return $stmt->fetchColumn();
             case 'sqlite':
                 $query = "PRAGMA table_info(".$rootEntity.")";
                 $stmt = $connection->executeQuery($query);
@@ -152,17 +160,14 @@ abstract class AbstractQueryBuilder
                     }
                 }
         }
-        if ($query) {
-            $stmt = $connection->executeQuery($query);
-            return $stmt->fetchColumn();
-        }
 
         return null;
     }
 
     /**
      * @param ORMQueryBuilder|DBALQueryBuilder $qb
-     * @param string $partName
+     * @param string                           $partName
+     *
      * @return array
      */
     public function getSqlPart($qb, $partName)
@@ -182,7 +187,9 @@ abstract class AbstractQueryBuilder
      * @param string $name
      * @param string $class
      * @param string $type
+     *
      * @return void
+     *
      * @throws QueryBuilderException
      */
     public function addCustomFunction($name, $class, $type)
@@ -225,12 +232,13 @@ abstract class AbstractQueryBuilder
      */
     public function setWithoutTotalResultCount($withoutTotalResultCount)
     {
-        $this->withoutTotalResultCount = (bool)$withoutTotalResultCount;
+        $this->withoutTotalResultCount = (bool) $withoutTotalResultCount;
     }
 
     /**
      * @param ORMQueryBuilder|DBALQueryBuilder $qb
-     * @param array|null $parts
+     * @param array|null                       $parts
+     *
      * @return ORMQueryBuilder|DBALQueryBuilder
      */
     protected function resetSqlParts($qb, array $parts = null)
@@ -246,6 +254,7 @@ abstract class AbstractQueryBuilder
 
     /**
      * @param string $name
+     *
      * @return bool
      */
     protected function isAggregateFunction($name)
@@ -253,11 +262,13 @@ abstract class AbstractQueryBuilder
         if (is_array($name)) {
             $name = current($name);
         }
+
         return in_array(strtoupper($name), QueryBuilderInterface::AGGREGATE_FUNCTIONS);
     }
 
     /**
-     * @param $condition
+     * @param string $condition
+     *
      * @return string
      */
     protected function trimAndOr($condition)

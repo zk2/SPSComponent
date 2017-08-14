@@ -1,10 +1,20 @@
 <?php
+/**
+ * This file is part of the SpsComponent package.
+ *
+ * (c) Evgeniy Budanov <budanov.ua@gmail.comm> 2017.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Zk2\SpsComponent\Condition;
 
-
 use Doctrine\Common\Collections\ArrayCollection;
 
+/**
+ * Interface ContainerInterface
+ */
 interface ContainerInterface
 {
     const CONDITION_NAME = 'condition';
@@ -22,9 +32,11 @@ interface ContainerInterface
     const AND_OR_OPERATORS = [self::OPERATOR_AND, self::OPERATOR_OR];
 
     /**
-     * @param array $data
+     * @param array  $data
      * @param string $platform
+     *
      * @return self
+     *
      * @throws ContainerException
      */
     public static function create($data, $platform);
@@ -51,6 +63,7 @@ interface ContainerInterface
 
     /**
      * @param Container $container
+     *
      * @return self
      */
     public function addToCollection(Container $container);

@@ -1,8 +1,18 @@
 <?php
+/**
+ * This file is part of the SpsComponent package.
+ *
+ * (c) Evgeniy Budanov <budanov.ua@gmail.comm> 2017.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Zk2\SpsComponent\Condition;
 
-
+/**
+ * Class Condition
+ */
 class Condition implements ConditionInterface
 {
     /**
@@ -74,6 +84,7 @@ class Condition implements ConditionInterface
 
     /**
      * @param int $number
+     *
      * @return void
      */
     public function reconfigureParameters($number)
@@ -95,6 +106,7 @@ class Condition implements ConditionInterface
 
     /**
      * @param array $data
+     *
      * @throws ContainerException
      */
     public function setData(array $data)
@@ -103,7 +115,9 @@ class Condition implements ConditionInterface
         foreach ($data as $key => $value) {
             if (!array_key_exists($key, $this->data)) {
                 throw new ContainerException(sprintf('Property "%s" not exists in "%s"', $key, self::class));
-            } elseif (self::COMPARISON_OPERATOR_NAME === $key and !isset(self::COMPARISON_OPERATORS[$value])) {
+            }
+
+            if (self::COMPARISON_OPERATOR_NAME === $key and !isset(self::COMPARISON_OPERATORS[$value])) {
                 throw new ContainerException(sprintf('Comparison operator "%s" not supported', $value));
             }
 
@@ -124,13 +138,14 @@ class Condition implements ConditionInterface
             if (null !== $value) {
                 if (!is_array($value)) {
                     throw new ContainerException('The value must be an array');
-                } elseif (2 !== count($value)) {
+                }
+                if (2 !== count($value)) {
                     throw new ContainerException('The value must contain an array of two elements');
                 }
                 $i = 0;
                 foreach ($data[self::VALUE_OPERATOR_NAME] as $datum) {
                     $this->parameters[$baseParameterName.'_'.$i] = $datum;
-                    $i++;
+                    $i ++;
                 }
             }
         } else {
@@ -155,17 +170,16 @@ class Condition implements ConditionInterface
 
     /**
      * @return string
+     *
      * @throws ContainerException
      */
     public function buildCondition()
     {
         if (in_array($this->data[self::COMPARISON_OPERATOR_NAME], [self::TOKEN_IS_NULL, self::TOKEN_IS_NOT_NULL])) {
-
             return sprintf('%s %s', $this->getProperty(), $this->getComparisonOperator());
         }
 
         if (null === $this->data[self::VALUE_OPERATOR_NAME]) {
-
             return '';
         }
 
@@ -205,15 +219,14 @@ class Condition implements ConditionInterface
                     break;
                 case self::TOKEN_MATCHES:
                 case self::TOKEN_NOT_MATCHES:
-                    if ('postgresql' == $this->platform) {
+                    if ('postgresql' === $this->platform) {
                         $format =
-                            self::FULL_TEXT_SEARCH
-                            ."(%s,%s%s, '".$this->fullTextSearchMode."') = "
-                            .($operator == self::TOKEN_MATCHES ? 'TRUE' : 'FALSE');
-                    } elseif ('mysql' == $this->platform) {
+                            self::FULL_TEXT_SEARCH."(%s,%s%s, '".$this->fullTextSearchMode."') = ".(
+                                $operator === self::TOKEN_MATCHES ? 'TRUE' : 'FALSE'
+                            );
+                    } elseif ('mysql' === $this->platform) {
                         $format =
-                            self::FULL_TEXT_SEARCH
-                            ."(%s,%s%s '".$this->fullTextSearchMode."') != 0";
+                            self::FULL_TEXT_SEARCH."(%s,%s%s '".$this->fullTextSearchMode."') != 0";
                     } else {
                         $this->parameters[$parameter] = '%'.$this->parameters[$parameter].'%';
                         $this->data[self::COMPARISON_OPERATOR_NAME] = self::TOKEN_CONTAINS;
@@ -222,7 +235,6 @@ class Condition implements ConditionInterface
             }
 
             return sprintf($format, $property, $this->getComparisonOperator(), $parameter);
-
         } elseif (in_array($operator, [self::TOKEN_BETWEEN, self::TOKEN_NOT_BETWEEN]) and count($this->parameters)) {
             return sprintf(
                 '%s %s %s',
@@ -241,7 +253,6 @@ class Condition implements ConditionInterface
     public function getCustomFunction()
     {
         if (isset(self::CUSTOM_FUNCTIONS[$this->data[self::COMPARISON_OPERATOR_NAME]])) {
-
             return self::CUSTOM_FUNCTIONS[$this->data[self::COMPARISON_OPERATOR_NAME]];
         }
 

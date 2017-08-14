@@ -1,4 +1,12 @@
 <?php
+/**
+ * This file is part of the SpsComponent package.
+ *
+ * (c) Evgeniy Budanov <budanov.ua@gmail.comm> 2017.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Tests\Entity;
 
@@ -52,14 +60,14 @@ class Country
     private $surfaceArea;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="indep_year",  type="smallint", nullable=true)
      */
     private $indepYear;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="population",  type="integer", options={"default": 0})
      */
@@ -653,11 +661,17 @@ class Country
         return $this->languages;
     }
 
+    /**
+     * @return int
+     */
     public function getCountCities()
     {
         return $this->cities->count();
     }
 
+    /**
+     * @return array
+     */
     public function toArray()
     {
         return [

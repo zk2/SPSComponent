@@ -1,4 +1,12 @@
 <?php
+/**
+ * This file is part of the SpsComponent package.
+ *
+ * (c) Evgeniy Budanov <budanov.ua@gmail.comm> 2017.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Zk2\SpsComponent\Doctrine;
 
@@ -9,6 +17,9 @@ use Doctrine\ORM\Query\Parser;
 use Doctrine\ORM\Query\SqlWalker;
 use Zk2\SpsComponent\QueryBuilderException;
 
+/**
+ * Class FullTextSearchFunction
+ */
 class FullTextSearchFunction extends FunctionNode
 {
     /**
@@ -33,6 +44,7 @@ class FullTextSearchFunction extends FunctionNode
 
     /**
      * @param Parser $parser
+     *
      * @throws QueryBuilderException
      */
     public function parse(Parser $parser)
@@ -78,12 +90,13 @@ class FullTextSearchFunction extends FunctionNode
             default:
                 throw new QueryBuilderException(sprintf('Platform "%s" does not supported full text search', $platform));
         }
-
     }
 
     /**
      * @param SqlWalker $sqlWalker
+     *
      * @return string
+     *
      * @throws QueryBuilderException
      */
     public function getSql(SqlWalker $sqlWalker)
@@ -93,13 +106,14 @@ class FullTextSearchFunction extends FunctionNode
             case 'postgresql':
                 if ($this->mode) {
                     $query =
-                        $this->fields[0]->dispatch($sqlWalker)
-                        .' @@ to_tsquery('.$this->mode->dispatch($sqlWalker).', '
-                        .$this->queryString->dispatch($sqlWalker).')';
+                        $this->fields[0]->dispatch($sqlWalker).' @@ to_tsquery('.$this->mode->dispatch(
+                            $sqlWalker
+                        ).', '.$this->queryString->dispatch($sqlWalker).')';
                 } else {
                     $query =
-                        $this->fields[0]->dispatch($sqlWalker)
-                        .' @@ to_tsquery('.$this->queryString->dispatch($sqlWalker).')';
+                        $this->fields[0]->dispatch($sqlWalker).' @@ to_tsquery('.$this->queryString->dispatch(
+                            $sqlWalker
+                        ).')';
                 }
 
                 return $query;
@@ -112,9 +126,9 @@ class FullTextSearchFunction extends FunctionNode
                 );
                 $haystack = implode(',', $haystack);
                 $query =
-                    ($this->not ? 'NOT ' : '')
-                    .'MATCH('.$haystack.') AGAINST ('.$this->queryString->dispatch($sqlWalker)
-                    .($this->mode ? ' '.$this->mode->dispatch($sqlWalker) : '').')';
+                    ($this->not ? 'NOT ' : '').'MATCH('.$haystack.') AGAINST ('.$this->queryString->dispatch(
+                        $sqlWalker
+                    ).($this->mode ? ' '.$this->mode->dispatch($sqlWalker) : '').')';
 
                 return $query;
             default:

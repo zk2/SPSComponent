@@ -1,9 +1,16 @@
 <?php
+/**
+ * This file is part of the SpsComponent package.
+ *
+ * (c) Evgeniy Budanov <budanov.ua@gmail.comm> 2017.
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Zk2\SpsComponent;
 
 use Zk2\SpsComponent\Condition\ContainerInterface;
-
 
 /**
  * Interface QueryBuilderInterface
@@ -19,19 +26,22 @@ interface QueryBuilderInterface
 
     /**
      * @param ContainerInterface $container
+     *
      * @return self
      */
     public function buildWhere(ContainerInterface $container);
 
     /**
      * @param array $fields
+     *
      * @return QueryBuilderInterface
      */
     public function buildOrderBy(array $fields);
 
     /**
-     * @param int $offset = 0
-     * @param int $limit = 30
+     * @param int $limit  = 0
+     * @param int $offset = 30
+     *
      * @return array
      */
     public function getResult($limit = 0, $offset = 0);
@@ -48,7 +58,8 @@ interface QueryBuilderInterface
 
     /**
      * @param ORMQueryBuilder|DBALQueryBuilder $qb
-     * @param string $partName
+     * @param string                           $partName
+     *
      * @return array
      */
     public function getSqlPart($qb, $partName);
@@ -62,6 +73,7 @@ interface QueryBuilderInterface
      * @param string $name
      * @param string $class
      * @param string $type
+     *
      * @return void
      */
     public function addCustomFunction($name, $class, $type);
@@ -75,5 +87,4 @@ interface QueryBuilderInterface
      * @param bool $withoutTotalResultCount
      */
     public function setWithoutTotalResultCount($withoutTotalResultCount);
-
 }
