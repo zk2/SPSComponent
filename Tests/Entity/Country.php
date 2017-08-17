@@ -21,7 +21,6 @@ use Doctrine\ORM\Mapping as ORM;
  *     indexes={
  *         @ORM\Index(name="country_name_idx", columns={"name"}),
  *         @ORM\Index(name="country_code_idx", columns={"code"}),
- *         @ORM\Index(name="country_indep_year_idx", columns={"indep_year"}),
  *         @ORM\Index(name="country_population_idx", columns={"population"})
  *     }
  * )
@@ -48,7 +47,7 @@ class Country
     /**
      * @var string
      *
-     * @ORM\Column(name="code",  type="string", length=3)
+     * @ORM\Column(name="code",  type="string")
      */
     private $code;
 
@@ -58,13 +57,6 @@ class Country
      * @ORM\Column(name="surface_area",  type="decimal", precision=10, scale=2)
      */
     private $surfaceArea;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="indep_year",  type="smallint", nullable=true)
-     */
-    private $indepYear;
 
     /**
      * @var int
@@ -81,20 +73,6 @@ class Country
     private $lifeExpectancy;
 
     /**
-     * @var float
-     *
-     * @ORM\Column(name="gnp",  type="decimal", nullable=true, precision=10, scale=2)
-     */
-    private $gnp;
-
-    /**
-     * @var float
-     *
-     * @ORM\Column(name="gnp_old",  type="decimal", nullable=true, precision=10, scale=2)
-     */
-    private $gnpOld;
-
-    /**
      * @var string
      *
      * @ORM\Column(name="local_name", nullable=true,  type="string", length=64)
@@ -109,13 +87,6 @@ class Country
     private $governmentForm;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="head_of_state", nullable=true,  type="string", length=64)
-     */
-    private $headOfState;
-
-    /**
      * @var City
      *
      * @ORM\ManyToOne(targetEntity="City", cascade={"persist"})
@@ -124,25 +95,11 @@ class Country
     private $capital;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="code2", nullable=true,  type="string", length=2)
-     */
-    private $code2;
-
-    /**
      * @var \DateTime
      *
      * @ORM\Column(name="last_date",  type="datetime")
      */
     private $lastDate;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="flag",  type="string", nullable=true)
-     */
-    private $flag;
 
     /**
      * @var Continent
@@ -266,30 +223,6 @@ class Country
     }
 
     /**
-     * Set indepYear
-     *
-     * @param integer $indepYear
-     *
-     * @return Country
-     */
-    public function setIndepYear($indepYear)
-    {
-        $this->indepYear = $indepYear;
-
-        return $this;
-    }
-
-    /**
-     * Get indepYear
-     *
-     * @return integer
-     */
-    public function getIndepYear()
-    {
-        return $this->indepYear;
-    }
-
-    /**
      * Set population
      *
      * @param integer $population
@@ -335,54 +268,6 @@ class Country
     public function getLifeExpectancy()
     {
         return $this->lifeExpectancy;
-    }
-
-    /**
-     * Set gnp
-     *
-     * @param string $gnp
-     *
-     * @return Country
-     */
-    public function setGnp($gnp)
-    {
-        $this->gnp = $gnp;
-
-        return $this;
-    }
-
-    /**
-     * Get gnp
-     *
-     * @return string
-     */
-    public function getGnp()
-    {
-        return $this->gnp;
-    }
-
-    /**
-     * Set gnpOld
-     *
-     * @param string $gnpOld
-     *
-     * @return Country
-     */
-    public function setGnpOld($gnpOld)
-    {
-        $this->gnpOld = $gnpOld;
-
-        return $this;
-    }
-
-    /**
-     * Get gnpOld
-     *
-     * @return string
-     */
-    public function getGnpOld()
-    {
-        return $this->gnpOld;
     }
 
     /**
@@ -434,30 +319,6 @@ class Country
     }
 
     /**
-     * Set headOfState
-     *
-     * @param string $headOfState
-     *
-     * @return Country
-     */
-    public function setHeadOfState($headOfState)
-    {
-        $this->headOfState = $headOfState;
-
-        return $this;
-    }
-
-    /**
-     * Get headOfState
-     *
-     * @return string
-     */
-    public function getHeadOfState()
-    {
-        return $this->headOfState;
-    }
-
-    /**
      * Set capital
      *
      * @param City $capital
@@ -482,30 +343,6 @@ class Country
     }
 
     /**
-     * Set code2
-     *
-     * @param string $code2
-     *
-     * @return Country
-     */
-    public function setCode2($code2)
-    {
-        $this->code2 = $code2;
-
-        return $this;
-    }
-
-    /**
-     * Get code2
-     *
-     * @return string
-     */
-    public function getCode2()
-    {
-        return $this->code2;
-    }
-
-    /**
      * @return \DateTime
      */
     public function getLastDate()
@@ -521,26 +358,6 @@ class Country
     public function setLastDate($lastDate)
     {
         $this->lastDate = $lastDate;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getFlag()
-    {
-        return $this->flag;
-    }
-
-    /**
-     * @param string $flag
-     *
-     * @return Country
-     */
-    public function setFlag($flag)
-    {
-        $this->flag = $flag;
 
         return $this;
     }
@@ -680,16 +497,11 @@ class Country
             'region' => $this->region->getName(),
             'name' => $this->name,
             'code' => $this->code,
-            'code2' => $this->code2,
             'surface_area' => $this->surfaceArea,
-            'indep_year' => $this->indepYear,
             'population' => $this->population,
             'life_expectancy' => $this->lifeExpectancy,
-            'gnp' => $this->gnp,
-            'gnp_old' => $this->gnpOld,
             'local_name' => $this->localName,
             'government_form' => $this->governmentForm,
-            'head_of_state' => $this->headOfState,
             'capital' => $this->capital ? $this->capital->getName() : null,
             'last_date' => $this->lastDate ? $this->lastDate->format('c') : null,
         ];

@@ -38,17 +38,16 @@ class Container implements ContainerInterface
     private $collectionOfConditions;
 
     /**
-     * @param array  $data
-     * @param string $platform
+     * @param array $data
      *
      * @return self
      *
      * @throws ContainerException
      */
-    public static function create($data, $platform)
+    public static function create($data)
     {
         if (!$data) {
-            return new self(self::COLLECTION_NAME, $platform);
+            return new self(self::COLLECTION_NAME);
         }
 
         $type = null;
@@ -65,13 +64,13 @@ class Container implements ContainerInterface
         if (!is_array($data[$type])) {
             throw new ContainerException(sprintf('Parameter "%s" must be array', $type));
         }
-        $mainContainer = new self($type, $platform);
+        $mainContainer = new self($type);
         if (isset($data[self::AND_OR_OPERATOR_NAME])) {
             $mainContainer->setAndOr($data[self::AND_OR_OPERATOR_NAME]);
         }
         if (self::COLLECTION_NAME === $type) {
             foreach ($data[$type] as $datum) {
-                $mainContainer->addToCollection(self::create($datum, $platform));
+                $mainContainer->addToCollection(self::create($datum));
             }
         } elseif (self::CONDITION_NAME === $type) {
             $mainContainer->getCondition()->setData($data[$type]);
@@ -129,15 +128,14 @@ class Container implements ContainerInterface
     /**
      * Instance constructor.
      * @param string $type
-     * @param string $platform
      */
-    private function __construct($type, $platform)
+    private function __construct($type)
     {
         $this->type = (string) $type;
         if (self::COLLECTION_NAME === $type) {
             $this->collectionOfConditions = new ArrayCollection();
         } else {
-            $this->condition = new Condition($platform);
+            $this->condition = new Condition();
         }
     }
 

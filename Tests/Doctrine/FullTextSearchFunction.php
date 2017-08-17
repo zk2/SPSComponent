@@ -8,7 +8,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Zk2\SpsComponent\Doctrine;
+namespace Tests\Doctrine;
 
 use Doctrine\ORM\Query\AST\Functions\FunctionNode;
 use Doctrine\ORM\Query\AST\Node;

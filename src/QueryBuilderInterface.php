@@ -17,7 +17,7 @@ use Zk2\SpsComponent\Condition\ContainerInterface;
  */
 interface QueryBuilderInterface
 {
-    const AGGREGATE_FUNCTIONS = ['COUNT', 'SUM', 'MAX', 'MIN', 'AVG'];
+    //const AGGREGATE_FUNCTIONS = ['COUNT', 'SUM', 'MAX', 'MIN', 'AVG'];
 
     /**
      * @return DBALQueryBuilder|ORMQueryBuilder
@@ -70,15 +70,6 @@ interface QueryBuilderInterface
     public function getPlatform();
 
     /**
-     * @param string $name
-     * @param string $class
-     * @param string $type
-     *
-     * @return void
-     */
-    public function addCustomFunction($name, $class, $type);
-
-    /**
      * @return bool
      */
     public function isWithoutTotalResultCount();
@@ -87,4 +78,12 @@ interface QueryBuilderInterface
      * @param bool $withoutTotalResultCount
      */
     public function setWithoutTotalResultCount($withoutTotalResultCount);
+
+    /**
+     * @param string $name
+     * @param mixed  $value
+     *
+     * @return static
+     */
+    public function setHint($name, $value);
 }

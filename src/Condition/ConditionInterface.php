@@ -10,8 +10,6 @@
 
 namespace Zk2\SpsComponent\Condition;
 
-use Zk2\SpsComponent\Doctrine\FullTextSearchFunction;
-
 /**
  * Interface ConditionInterface
  */
@@ -31,9 +29,6 @@ interface ConditionInterface
     const NOT_LIKE = 'NOT LIKE';
     const INSTANCE_OF = 'INSTANCE OF';
     const NOT_INSTANCE_OF = 'NOT INSTANCE OF';
-    //const LTREE = '~';
-    const MATCHES = '';
-    const NOT_MATCHES = '';
     const BETWEEN = 'BETWEEN';
     const NOT_BETWEEN = 'NOT BETWEEN';
 
@@ -55,8 +50,6 @@ interface ConditionInterface
     const TOKEN_NOT_CONTAINS = 'notContains';
     const TOKEN_INSTANCE_OF = 'instanceOf';
     const TOKEN_NOT_INSTANCE_OF = 'notInstanceOf';
-    const TOKEN_MATCHES = 'matches';
-    const TOKEN_NOT_MATCHES = 'notMatches';
     const TOKEN_BETWEEN = 'between';
     const TOKEN_NOT_BETWEEN = 'notBetween';
 
@@ -79,8 +72,6 @@ interface ConditionInterface
         self::TOKEN_NOT_CONTAINS => self::NOT_LIKE,
         self::TOKEN_INSTANCE_OF => self::INSTANCE_OF,
         self::TOKEN_NOT_INSTANCE_OF => self::NOT_INSTANCE_OF,
-        self::TOKEN_MATCHES => self::MATCHES,
-        self::TOKEN_NOT_MATCHES => self::NOT_MATCHES,
         self::TOKEN_BETWEEN => self::BETWEEN,
         self::TOKEN_NOT_BETWEEN => self::NOT_BETWEEN,
     ];
@@ -88,6 +79,8 @@ interface ConditionInterface
     const COMPARISON_OPERATOR_NAME = 'comparisonOperator';
 
     const FUNCTION_OPERATOR_NAME = 'function';
+    const FUNCTION_OPERATOR_AGGREGATE_NAME = 'aggregate';
+    const FUNCTION_OPERATOR_DEFINITION_NAME = 'definition';
 
     const PROPERTY_OPERATOR_NAME = 'property';
 
@@ -96,21 +89,6 @@ interface ConditionInterface
     const VALUE_OPERATOR_NAME = 'value';
 
     const SEARCH_MODE_NAME = 'searchMode';
-
-    const FULL_TEXT_SEARCH = 'FULL_TEXT_SEARCH';
-
-    const CUSTOM_FUNCTIONS = [
-        self::TOKEN_MATCHES => [
-            'name' => self::FULL_TEXT_SEARCH,
-            'class' => FullTextSearchFunction::class,
-            'type' => 'string',
-        ],
-        self::TOKEN_NOT_MATCHES => [
-            'name' => self::FULL_TEXT_SEARCH,
-            'class' => FullTextSearchFunction::class,
-            'type' => 'string',
-        ],
-    ];
 
     /**
      * @return string
@@ -159,7 +137,15 @@ interface ConditionInterface
     public function buildCondition();
 
     /**
-     * @return array|null
+     * @return bool
      */
-    public function getCustomFunction();
+    public function isAggregateFunction();
+
+    /**
+     * @param string $parameterName
+     * @param string $prefix
+     *
+     * @return string
+     */
+    public function getFunctionDefinition($parameterName, $prefix = '');
 }

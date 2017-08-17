@@ -12,18 +12,15 @@ namespace Zk2\SpsComponent;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\NoResultException;
-use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\Expr\Base;
 use Doctrine\ORM\Query\Expr\From;
 use Doctrine\ORM\Query\Expr\Join;
-use Doctrine\ORM\Query\Expr\OrderBy;
 use Doctrine\ORM\Query\Parameter;
 use Doctrine\ORM\QueryBuilder;
 use Zk2\SpsComponent\Condition\Condition;
 use Zk2\SpsComponent\Condition\ConditionInterface;
 use Zk2\SpsComponent\Condition\ContainerException;
 use Zk2\SpsComponent\Condition\ContainerInterface;
-use Zk2\SpsComponent\Doctrine\SortableNullsWalker;
 
 /**
  *
@@ -79,10 +76,13 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
             return [];
         }
 
-        $this->result = $this->queryBuilder
-            ->getQuery()
-            ->setHint(Query::HINT_CUSTOM_OUTPUT_WALKER, SortableNullsWalker::class)
-            ->getResult();
+        $query = $this->queryBuilder->getQuery();
+
+        foreach ($this->hints as $name => $hint) {
+            $query->setHint($name, $hint);
+        }
+
+        $this->result = $query->getResult();
 
         return $this->result;
     }
@@ -95,7 +95,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
     private function count()
     {
         if (!$this->withoutTotalResultCount) {
-            $qb = clone $this->queryBuilder;
+            $qb = $this->clone($this->queryBuilder);
             $this->resetSqlParts($qb, ['select', 'groupBy', 'orderBy'])
                 ->setFirstResult(null)
                 ->setMaxResults(null)
@@ -124,38 +124,38 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
             return false;
         }
 
-        $qb = clone $this->queryBuilder;
-        $qb->select(sprintf('DISTINCT %s', $this->aliasDotPrimary()))
-            ->setFirstResult($offset)
-            ->setMaxResults($limit);
+        $qb = $this->clone($this->queryBuilder);
+        $qb->select(sprintf('%s', $this->aliasDotPrimary()))
+            ->setFirstResult(null)
+            ->setMaxResults(null);
 
-        /** @var OrderBy $order */
-        foreach ($this->getSqlPart($qb, 'orderBy') as $order) {
-            foreach ($order->getParts() as $part) {
-                if (!strlen($part)) {
-                    continue;
-                }
-                $arr = explode(' ', $part);
-                $field = (string) $arr[0];
-                if ($this->aliasDotPrimary() === $field) {
-                    continue;
-                }
-                $qb->addSelect($field);
-            }
+        $query = $qb->getQuery();
+
+        foreach ($this->hints as $name => $hint) {
+            $query->setHint($name, $hint);
         }
 
-        $ids = array_map(
-            function ($val) {
-                return $val[$this->primary];
-            },
-            $qb
-                ->getQuery()
-                ->setHint(Query::HINT_CUSTOM_OUTPUT_WALKER, SortableNullsWalker::class)
-                ->getResult()
+        $params = $types = [];
+        /** @var Parameter $parameter */
+        foreach ($query->getParameters() as $key => $parameter) {
+            $params[$key] = $parameter->getValue();
+            $types[$key] = $parameter->getType();
+        }
+
+        /** @var \PDOStatement $stmt */
+        $stmt = $this->queryBuilder->getEntityManager()->getConnection()->executeQuery(
+            $query->getSQL(),
+            $params,
+            $types
         );
+
+        $ids = $stmt->fetchAll(\PDO::FETCH_UNIQUE | \PDO::FETCH_COLUMN, 0);
+
         if (!$ids) {
             return false;
         }
+
+        $ids = array_slice($ids, $offset, $limit);
 
         $this->queryBuilder
             ->setFirstResult(null)
@@ -235,11 +235,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
         $suffix = $this->parameters->count() + 1;
         $condition->reconfigureParameters($suffix);
 
-        if ($customFunction = $condition->getCustomFunction()) {
-            $this->addCustomFunction($customFunction['name'], $customFunction['class'], $customFunction['type']);
-        }
-
-        if ($condition->getFunction() and $this->isAggregateFunction($condition->getFunction())) {
+        if ($condition->isAggregateFunction()) {
             $where = $this->aggregate($condition);
         } else {
             $where = $condition->buildCondition();
@@ -271,7 +267,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
         }
         $this->aggNumber++;
         $prefix = str_repeat('_', $this->aggNumber);
-        $qb = clone $this->queryBuilder;
+        $qb = $this->clone($this->queryBuilder);
 
         $this->resetSqlParts($qb)
             ->select(sprintf('DISTINCT %s%s', $prefix, $this->aliasDotPrimary()))
@@ -307,14 +303,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
             $newParameterName = key($newParameters);
         }
 
-        $newHaving = sprintf(
-            '%s(%s) %s %s',
-            $condition->getFunction(),
-            $prefix.$condition->getProperty(),
-            $condition->getComparisonOperator(),
-            $newParameterName
-        );
-        $qb->andHaving($newHaving)->setParameters([]);
+        $qb->andHaving($condition->getFunctionDefinition($newParameterName, $prefix))->setParameters([]);
 
         foreach ($newParameters as $paramName => $paramValue) {
             $parameter = new Parameter($paramName, $paramValue);
@@ -322,5 +311,21 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
         }
 
         return sprintf('%s IN(%s)', $this->aliasDotPrimary(), $qb->getDQL());
+    }
+
+    /**
+     * @param QueryBuilder $qb
+     *
+     * @return QueryBuilder
+     */
+    private function clone(QueryBuilder $qb)
+    {
+        $newQb = clone $qb;
+
+        foreach ($qb->getQuery()->getHints() as $hintName => $hint) {
+            $newQb->getQuery()->setHint($hintName, $hint);
+        }
+
+        return $newQb;
     }
 }

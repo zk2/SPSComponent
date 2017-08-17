@@ -109,35 +109,9 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
             return false;
         }
 
-        $qb = clone $this->queryBuilder;
-        $qb->select(sprintf('DISTINCT %s', $this->aliasDotPrimary()))
+        $this->queryBuilder
             ->setFirstResult($offset)
             ->setMaxResults($limit);
-
-        foreach ($this->getSqlPart($qb, 'orderBy') as $part) {
-            $field = stristr($part, ' ', true);
-            if ($field === $this->aliasDotPrimary()) {
-                continue;
-            }
-            $qb->addSelect($field);
-        }
-        $stmt = $qb->execute();
-
-        $ids = array_map(
-            function ($val) {
-                return $val['id'];
-            },
-            $stmt->fetchAll()
-        );
-        if (!$ids) {
-            return false;
-        }
-
-        $this->queryBuilder
-            ->setFirstResult(null)
-            ->setMaxResults(null)
-            ->where(sprintf("%s IN (:_sps_ids_)", $this->aliasDotPrimary()))
-            ->setParameters(['_sps_ids_' => $ids], ['_sps_ids_' => $this->inferType($ids)]);
 
         return true;
     }
@@ -189,7 +163,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
         $suffix = count($this->parameters) + 1;
         $condition->reconfigureParameters($suffix);
 
-        if ($condition->getFunction() and $this->isAggregateFunction($condition->getFunction())) {
+        if ($condition->isAggregateFunction()) {
             $where = $this->aggregate($condition);
         } else {
             $where = $condition->buildCondition();
@@ -254,15 +228,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
         } else {
             $newParameterName = key($newParameters);
         }
-
-        $newHaving = sprintf(
-            '%s(%s) %s %s',
-            $condition->getFunction(),
-            $prefix.$condition->getProperty(),
-            $condition->getComparisonOperator(),
-            $newParameterName
-        );
-        $qb->andHaving($newHaving)->setParameters([]);
+        $qb->andHaving($condition->getFunctionDefinition($newParameterName, $prefix))->setParameters([]);
 
         foreach ($newParameters as $paramName => $paramValue) {
             $this->parameters[$newParameterName] = $paramValue;

@@ -32,14 +32,13 @@ interface ContainerInterface
     const AND_OR_OPERATORS = [self::OPERATOR_AND, self::OPERATOR_OR];
 
     /**
-     * @param array  $data
-     * @param string $platform
+     * @param array $data
      *
      * @return self
      *
      * @throws ContainerException
      */
-    public static function create($data, $platform);
+    public static function create($data);
 
     /**
      * @return string

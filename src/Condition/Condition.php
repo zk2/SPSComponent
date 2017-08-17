@@ -21,16 +21,6 @@ class Condition implements ConditionInterface
     private $parameters = [];
 
     /**
-     * @var string
-     */
-    private $platform;
-
-    /**
-     * @var string
-     */
-    private $fullTextSearchMode;
-
-    /**
      * @var array
      */
     private $data = [
@@ -38,17 +28,11 @@ class Condition implements ConditionInterface
         self::TYPE_OPERATOR_NAME => null,
         self::COMPARISON_OPERATOR_NAME => null,
         self::VALUE_OPERATOR_NAME => null,
-        self::FUNCTION_OPERATOR_NAME => null,
+        self::FUNCTION_OPERATOR_NAME => [
+            self::FUNCTION_OPERATOR_AGGREGATE_NAME => false,
+            self::FUNCTION_OPERATOR_DEFINITION_NAME => null,
+        ],
     ];
-
-    /**
-     * Condition constructor.
-     * @param string $platform
-     */
-    public function __construct($platform)
-    {
-        $this->platform = $platform;
-    }
 
     /**
      * @return array
@@ -79,7 +63,9 @@ class Condition implements ConditionInterface
      */
     public function getComparisonOperator()
     {
-        return self::COMPARISON_OPERATORS[$this->data[self::COMPARISON_OPERATOR_NAME]];
+        return isset(self::COMPARISON_OPERATORS[$this->data[self::COMPARISON_OPERATOR_NAME]])
+            ? self::COMPARISON_OPERATORS[$this->data[self::COMPARISON_OPERATOR_NAME]]
+            : null;
     }
 
     /**
@@ -97,11 +83,19 @@ class Condition implements ConditionInterface
     }
 
     /**
-     * @return array|string
+     * @return array
      */
     public function getFunction()
     {
         return $this->data[self::FUNCTION_OPERATOR_NAME];
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAggregateFunction()
+    {
+        return $this->getFunction() and $this->getFunction()[self::FUNCTION_OPERATOR_AGGREGATE_NAME];
     }
 
     /**
@@ -117,12 +111,24 @@ class Condition implements ConditionInterface
                 throw new ContainerException(sprintf('Property "%s" not exists in "%s"', $key, self::class));
             }
 
-            if (self::COMPARISON_OPERATOR_NAME === $key and !isset(self::COMPARISON_OPERATORS[$value])) {
-                throw new ContainerException(sprintf('Comparison operator "%s" not supported', $value));
+            if (self::FUNCTION_OPERATOR_NAME === $key) {
+                if (!isset($value[self::FUNCTION_OPERATOR_DEFINITION_NAME])) {
+                    throw new ContainerException('Function was not defined');
+                }
+                $value = array_merge($this->data[self::FUNCTION_OPERATOR_NAME], $value);
+            }
+
+            if (self::COMPARISON_OPERATOR_NAME === $key) {
+                if (!$value and !isset($data[self::FUNCTION_OPERATOR_NAME][self::FUNCTION_OPERATOR_DEFINITION_NAME])) {
+                    throw new ContainerException('Comparison operator was not defined and Function was not defined');
+                }
+                if ($value and !isset(self::COMPARISON_OPERATORS[$value])) {
+                    throw new ContainerException(sprintf('Comparison operator "%s" not supported', $value));
+                }
             }
 
             if (self::PROPERTY_OPERATOR_NAME === $key) {
-                $baseParameterName = ':'.str_replace(['(', ')', '.'], ['', '', '_'], $value);
+                $baseParameterName = ':'.str_replace(['(', ')', ',', ':', '.'], ['', '', '_', '_', '_'], $value);
             }
             $this->data[$key] = $value;
         }
@@ -151,21 +157,6 @@ class Condition implements ConditionInterface
         } else {
             $this->parameters[$baseParameterName] = $data[self::VALUE_OPERATOR_NAME];
         }
-
-        if (in_array($data[self::COMPARISON_OPERATOR_NAME], [self::TOKEN_MATCHES, self::TOKEN_NOT_MATCHES])) {
-            if (isset($data[self::SEARCH_MODE_NAME])) {
-                $this->fullTextSearchMode = $data[self::SEARCH_MODE_NAME];
-            } else {
-                switch ($this->platform) {
-                    case 'postgresql':
-                        $this->fullTextSearchMode = 'english';
-                        break;
-                    case 'mysql':
-                        $this->fullTextSearchMode = 'IN NATURAL MODE';
-                        break;
-                }
-            }
-        }
     }
 
     /**
@@ -183,79 +174,95 @@ class Condition implements ConditionInterface
             return '';
         }
 
-        $property = $this->getProperty();
-        $operator = $this->data[self::COMPARISON_OPERATOR_NAME];
+        $this->prepareValues();
 
-        if ($function = $this->getFunction()) {
-            if (!is_array($function)) {
-                $function = [$function];
-            }
-            $functionName = array_shift($function);
-            $parameters = $function ? ','.implode(',', $function) : null;
-
-            $property = sprintf('%s(%s%s)', $functionName, $this->getProperty(), $parameters);
+        switch ($this->data[self::COMPARISON_OPERATOR_NAME]) {
+            case self::TOKEN_BETWEEN:
+            case self::TOKEN_NOT_BETWEEN:
+                $parametersByString = implode(' AND ', array_keys($this->parameters));
+                break;
+            default:
+                $parametersByString = key($this->parameters);
         }
 
-        if (1 === count($this->parameters)) {
-            $format = '%s %s %s';
-            $parameter = key($this->parameters);
-
-            switch ($operator) {
-                case self::TOKEN_IN:
-                case self::TOKEN_NOT_IN:
-                    $format = '%s %s(%s)';
-                    break;
-                case self::TOKEN_BEGINS_WITH:
-                case self::TOKEN_NOT_BEGINS_WITH:
-                    $this->parameters[$parameter] = $this->parameters[$parameter].'%';
-                    break;
-                case self::TOKEN_ENDS_WITH:
-                case self::TOKEN_NOT_ENDS_WITH:
-                    $this->parameters[$parameter] = '%'.$this->parameters[$parameter];
-                    break;
-                case self::TOKEN_CONTAINS:
-                case self::TOKEN_NOT_CONTAINS:
-                    $this->parameters[$parameter] = '%'.$this->parameters[$parameter].'%';
-                    break;
-                case self::TOKEN_MATCHES:
-                case self::TOKEN_NOT_MATCHES:
-                    if ('postgresql' === $this->platform) {
-                        $format =
-                            self::FULL_TEXT_SEARCH."(%s,%s%s, '".$this->fullTextSearchMode."') = ".(
-                                $operator === self::TOKEN_MATCHES ? 'TRUE' : 'FALSE'
-                            );
-                    } elseif ('mysql' === $this->platform) {
-                        $format =
-                            self::FULL_TEXT_SEARCH."(%s,%s%s '".$this->fullTextSearchMode."') != 0";
-                    } else {
-                        $this->parameters[$parameter] = '%'.$this->parameters[$parameter].'%';
-                        $this->data[self::COMPARISON_OPERATOR_NAME] = self::TOKEN_CONTAINS;
-                    }
-                    break;
-            }
-
-            return sprintf($format, $property, $this->getComparisonOperator(), $parameter);
-        } elseif (in_array($operator, [self::TOKEN_BETWEEN, self::TOKEN_NOT_BETWEEN]) and count($this->parameters)) {
-            return sprintf(
-                '%s %s %s',
-                $property,
-                $this->getComparisonOperator(),
-                implode(' AND ', array_keys($this->parameters))
-            );
+        if ($this->getFunction()[self::FUNCTION_OPERATOR_DEFINITION_NAME]) {
+            return $this->getFunctionDefinition($parametersByString);
         }
 
-        return '';
+        return sprintf('%s %s', $this->getProperty(), $this->prepareOperatorAndParameter($parametersByString));
+    }
+
+    /**
+     * @param string $parameterName
+     * @param string $prefix
+     *
+     * @return string|null
+     */
+    public function getFunctionDefinition($parameterName, $prefix = '')
+    {
+        if (!$definition = $this->getFunction()[self::FUNCTION_OPERATOR_DEFINITION_NAME]) {
+            return null;
+        }
+        $definition = str_replace(
+            ['{property}', '{value}'],
+            [$prefix.$this->getProperty(), $parameterName],
+            $definition
+        );
+        if ($this->getComparisonOperator()) {
+            $definition .= $this->prepareOperatorAndParameter($parameterName);
+        }
+
+        return $definition;
+    }
+
+    /**
+     * @param string $parameterName
+     *
+     * @return string
+     */
+    private function prepareOperatorAndParameter($parameterName)
+    {
+        switch ($this->data[self::COMPARISON_OPERATOR_NAME]) {
+            case self::TOKEN_IN:
+            case self::TOKEN_NOT_IN:
+                return sprintf(' %s(%s)', $this->getComparisonOperator(), $parameterName);
+            default:
+                return sprintf(' %s %s', $this->getComparisonOperator(), $parameterName);
+        }
     }
 
     /**
      * @return array|null
      */
-    public function getCustomFunction()
+    private function prepareValues()
     {
-        if (isset(self::CUSTOM_FUNCTIONS[$this->data[self::COMPARISON_OPERATOR_NAME]])) {
-            return self::CUSTOM_FUNCTIONS[$this->data[self::COMPARISON_OPERATOR_NAME]];
+        switch ($this->data[self::COMPARISON_OPERATOR_NAME]) {
+            case self::TOKEN_BEGINS_WITH:
+            case self::TOKEN_NOT_BEGINS_WITH:
+                return $this->parameters = array_map(
+                    function ($val) {
+                        return $val.'%';
+                    },
+                    $this->parameters
+                );
+            case self::TOKEN_ENDS_WITH:
+            case self::TOKEN_NOT_ENDS_WITH:
+                return $this->parameters = array_map(
+                    function ($val) {
+                        return '%'.$val;
+                    },
+                    $this->parameters
+                );
+            case self::TOKEN_CONTAINS:
+            case self::TOKEN_NOT_CONTAINS:
+                return $this->parameters = array_map(
+                    function ($val) {
+                        return '%'.$val.'%';
+                    },
+                    $this->parameters
+                );
+            default:
+                return null;
         }
-
-        return null;
     }
 }

@@ -75,6 +75,11 @@ abstract class AbstractQueryBuilder
     protected $withoutTotalResultCount = false;
 
     /**
+     * @var array
+     */
+    protected $hints = [];
+
+    /**
      * @param ORMQueryBuilder|DBALQueryBuilder $queryBuilder
      */
     public function __construct($queryBuilder)
@@ -137,17 +142,24 @@ abstract class AbstractQueryBuilder
         $query = null;
         switch ($databasePlatformName) {
             case 'postgresql':
-                $query = "SELECT a.attname FROM pg_index i 
-                    JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey) 
-                    WHERE  i.indrelid = '".$rootEntity."'::regclass AND i.indisprimary";
+                /** @noinspection SpellCheckingInspection */
+                $query = sprintf(
+                    "%s %s %s",
+                    "SELECT a.attname FROM pg_index i",
+                    "JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)",
+                    "WHERE  i.indrelid = '".$rootEntity."'::regclass AND i.indisprimary"
+                );
                 $stmt = $connection->executeQuery($query);
 
                 return $stmt->fetchColumn();
             case 'mysql':
-                $query = "SELECT k.column_name FROM information_schema.table_constraints t 
-                    JOIN information_schema.key_column_usage k USING(constraint_name,table_schema,table_name) 
-                    WHERE t.constraint_type='PRIMARY KEY' AND t.table_schema='".$connection->getDatabase()."' 
-                    AND t.table_name='".$rootEntity."';";
+                $query = sprintf(
+                    "%s %s %s %s",
+                    "SELECT k.column_name FROM information_schema.table_constraints t",
+                    "JOIN information_schema.key_column_usage k USING(constraint_name,table_schema,table_name)",
+                    "WHERE t.constraint_type='PRIMARY KEY' AND t.table_schema='".$connection->getDatabase()."'",
+                    "AND t.table_name='".$rootEntity."';"
+                );
                 $stmt = $connection->executeQuery($query);
 
                 return $stmt->fetchColumn();
@@ -184,42 +196,6 @@ abstract class AbstractQueryBuilder
     }
 
     /**
-     * @param string $name
-     * @param string $class
-     * @param string $type
-     *
-     * @return void
-     *
-     * @throws QueryBuilderException
-     */
-    public function addCustomFunction($name, $class, $type)
-    {
-        if (!class_exists($class)) {
-            throw new QueryBuilderException(sprintf('Class "%s" is not exists', $class));
-        }
-        $configuration = $this->queryBuilder->getEntityManager()->getConfiguration();
-        switch (strtolower($type)) {
-            case 'string':
-                if (null === $configuration->getCustomStringFunction($name)) {
-                    $configuration->addCustomStringFunction($name, $class);
-                }
-                break;
-            case 'numeric':
-                if (null === $configuration->getCustomNumericFunction($name)) {
-                    $configuration->addCustomNumericFunction($name, $class);
-                }
-                break;
-            case 'datetime':
-                if (null === $configuration->getCustomDatetimeFunction($name)) {
-                    $configuration->addCustomDatetimeFunction($name, $class);
-                }
-                break;
-            default:
-                throw new QueryBuilderException(sprintf('Type "%s" is invalid', $type));
-        }
-    }
-
-    /**
      * @return bool
      */
     public function isWithoutTotalResultCount()
@@ -233,6 +209,21 @@ abstract class AbstractQueryBuilder
     public function setWithoutTotalResultCount($withoutTotalResultCount)
     {
         $this->withoutTotalResultCount = (bool) $withoutTotalResultCount;
+    }
+
+    /**
+     * Sets a query hint. If the hint name is not recognized, it is silently ignored.
+     *
+     * @param string $name  The name of the hint.
+     * @param mixed  $value The value of the hint.
+     *
+     * @return static This instance.
+     */
+    public function setHint($name, $value)
+    {
+        $this->hints[$name] = $value;
+
+        return $this;
     }
 
     /**
@@ -250,20 +241,6 @@ abstract class AbstractQueryBuilder
         }
 
         return $qb;
-    }
-
-    /**
-     * @param string $name
-     *
-     * @return bool
-     */
-    protected function isAggregateFunction($name)
-    {
-        if (is_array($name)) {
-            $name = current($name);
-        }
-
-        return in_array(strtoupper($name), QueryBuilderInterface::AGGREGATE_FUNCTIONS);
     }
 
     /**
