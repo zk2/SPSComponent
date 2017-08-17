@@ -111,7 +111,7 @@ class Condition implements ConditionInterface
                 throw new ContainerException(sprintf('Property "%s" not exists in "%s"', $key, self::class));
             }
 
-            if (self::FUNCTION_OPERATOR_NAME === $key) {
+            if (self::FUNCTION_OPERATOR_NAME === $key and $value) {
                 if (!isset($value[self::FUNCTION_OPERATOR_DEFINITION_NAME])) {
                     throw new ContainerException('Function was not defined');
                 }
