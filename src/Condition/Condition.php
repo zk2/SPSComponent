@@ -167,6 +167,8 @@ class Condition implements ConditionInterface
     public function buildCondition()
     {
         if (in_array($this->data[self::COMPARISON_OPERATOR_NAME], [self::TOKEN_IS_NULL, self::TOKEN_IS_NOT_NULL])) {
+            $this->parameters = [];
+
             return sprintf('%s %s', $this->getProperty(), $this->getComparisonOperator());
         }
 
