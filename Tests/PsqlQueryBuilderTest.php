@@ -97,6 +97,48 @@ class PsqlQueryBuilderTest extends AbstractQueryBuilderTest
                 $this->assertTrue(null === $result[1]->getCapital());
             }
         }
+
+        $this->addToLog('IS NULL :: IS NOT NULL');
+        $this->orderByData = [];
+        $this->limit = 2;
+        $this->offset = 0;
+        $container = $this->getContainer($this->getSingleCondition('capital.id', 'isNull'));
+        $ormQb = $this->getOrmQueryBuilder();
+        $ormQb->select('country, capital');
+        $qb = $this->buildOrmQuery($ormQb, $container);
+        /** @var Country[] $result */
+        $result = $qb->getResult($this->limit, $this->offset);
+
+        if ($this->debug > 2) {
+            $resultArray = array_map(
+                function (Country $country) {
+                    return $country->toArray();
+                },
+                $result
+            );
+            print_r($resultArray);
+        }
+        $this->assertTrue(null === $result[0]->getCapital());
+        $this->assertTrue(null === $result[1]->getCapital());
+
+        $container = $this->getContainer($this->getSingleCondition('capital.id', 'isNotNull'));
+        $ormQb = $this->getOrmQueryBuilder();
+        $ormQb->select('country, capital');
+        $qb = $this->buildOrmQuery($ormQb, $container);
+        /** @var Country[] $result */
+        $result = $qb->getResult($this->limit, $this->offset);
+
+        if ($this->debug > 2) {
+            $resultArray = array_map(
+                function (Country $country) {
+                    return $country->toArray();
+                },
+                $result
+            );
+            print_r($resultArray);
+        }
+        $this->assertTrue(null !== $result[0]->getCapital());
+        $this->assertTrue(null !== $result[1]->getCapital());
     }
 
     /**

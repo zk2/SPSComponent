@@ -135,7 +135,7 @@ class Condition implements ConditionInterface
 
         $value = $data[self::VALUE_OPERATOR_NAME];
 
-        if (null === $value) {
+        if (empty($value)) {
             return;
         }
 

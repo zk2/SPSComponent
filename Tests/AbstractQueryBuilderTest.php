@@ -369,6 +369,32 @@ abstract class AbstractQueryBuilderTest extends TestCase
     }
 
     /**
+     * @param string      $property
+     * @param string|null $comparisonOperator
+     * @param mixed       $value
+     * @param array       $function
+     *
+     * @return array
+     */
+    protected function getSingleCondition($property, $comparisonOperator = null, $value = null, $function = [])
+    {
+        return [
+            'andOrOperator' => null,
+            'collection' => [
+                [
+                    'andOrOperator' => null,
+                    'condition' => [
+                        'property' => $property,
+                        'comparisonOperator' => $comparisonOperator,
+                        'value' => $value,
+                        'function' => $function,
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
      * loadData
      */
     private function loadData()
