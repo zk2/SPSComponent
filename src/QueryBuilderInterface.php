@@ -17,7 +17,7 @@ use Zk2\SpsComponent\Condition\ContainerInterface;
  */
 interface QueryBuilderInterface
 {
-    //const AGGREGATE_FUNCTIONS = ['COUNT', 'SUM', 'MAX', 'MIN', 'AVG'];
+    const AGGREGATE_FUNCTIONS = ['COUNT', 'SUM', 'MAX', 'MIN', 'AVG'];
 
     /**
      * @return DBALQueryBuilder|ORMQueryBuilder
@@ -86,4 +86,11 @@ interface QueryBuilderInterface
      * @return static
      */
     public function setHint($name, $value);
+
+    /**
+     * @param string $func
+     *
+     * @return bol
+     */
+    public function isAggFunc($func);
 }

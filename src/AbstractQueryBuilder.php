@@ -12,7 +12,9 @@ namespace Zk2\SpsComponent;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder as DBALQueryBuilder;
+use Doctrine\ORM\Query\Expr\Select;
 use Doctrine\ORM\QueryBuilder as ORMQueryBuilder;
+use Zk2\SpsComponent\Condition\ConditionInterface;
 
 /**
  * Class AbstractQueryBuilder
@@ -80,6 +82,11 @@ abstract class AbstractQueryBuilder
     protected $hints = [];
 
     /**
+     * @var array
+     */
+    protected $aliasMapping = [];
+
+    /**
      * @param ORMQueryBuilder|DBALQueryBuilder $queryBuilder
      */
     public function __construct($queryBuilder)
@@ -118,16 +125,30 @@ abstract class AbstractQueryBuilder
      */
     public function buildOrderBy(array $fields)
     {
+        $this->parseSelectPath();
         foreach ($fields as $field) {
             if (!is_array($field)) {
                 $field = [$field];
             }
             $property = array_shift($field);
+            if (!in_array($property, $this->aliasMapping) and isset($this->aliasMapping[$property])) {
+                $property = $this->aliasMapping[$property];
+            }
             $direction = $field ? array_shift($field) : 'ASC';
             $this->addOrderBy($property, $direction);
         }
 
         return $this;
+    }
+
+    /**
+     * @param string $func
+     *
+     * @return bol
+     */
+    public function isAggFunc($func)
+    {
+        return preg_match('/'.implode('\(|', QueryBuilderInterface::AGGREGATE_FUNCTIONS).'\(/i', $func);
     }
 
     /**
@@ -284,5 +305,30 @@ abstract class AbstractQueryBuilder
     protected function aliasDotPrimary()
     {
         return sprintf("%s.%s", $this->rootAlias, $this->primary);
+    }
+
+    /**
+     * @return void
+     */
+    protected function parseSelectPath()
+    {
+        $selects = [];
+        foreach ($this->getSqlPart($this->queryBuilder, 'select') as $part) {
+            $selects = array_merge(array_map('trim', explode(',', $part)), $selects);
+        }
+        $selects = array_map(
+            function ($str) {
+                return preg_replace(
+                    '/ {2,}/',
+                    ' ',
+                    strtolower(str_replace([' AS ', ' as ', ' HIDDEN '], [' ', ' ', ' '], $str))
+                );
+            },
+            $selects
+        );
+        foreach ($selects as $select) {
+            $array = explode(' ', $select);
+            $this->aliasMapping[isset($array[1]) ? $array[1] : $array[0]] = $array[0];
+        }
     }
 }

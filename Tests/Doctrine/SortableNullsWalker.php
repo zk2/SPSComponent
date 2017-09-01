@@ -41,14 +41,14 @@ class SortableNullsWalker extends SqlWalker
                 $index = $dqlAlias.'.'.$fieldName;
                 switch ($platform) {
                     case 'mysql':
-                        if (self::NULLS_LAST === $hint[$index]) {
-                            $sql = sprintf(
-                                'ISNULL(%s), %s %s',
-                                $this->walkPathExpression($expr),
-                                $this->walkPathExpression($expr),
-                                $type
-                            );
-                        }
+                        $nullDirection = self::NULLS_LAST === $hint[$index] ? 'ASC' : 'DESC';
+                        $sql = sprintf(
+                            'ISNULL(%s) %s, %s %s',
+                            $this->walkPathExpression($expr),
+                            $nullDirection,
+                            $this->walkPathExpression($expr),
+                            $type
+                        );
                         break;
                     case 'oracle':
                     case 'postgresql':

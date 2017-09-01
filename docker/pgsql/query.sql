@@ -1,0 +1,1 @@
+CREATE DATABASE sps_component WITH OWNER sps;
