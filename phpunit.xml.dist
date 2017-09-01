@@ -15,8 +15,13 @@
     </php>
 
     <testsuites>
+        <testsuite name="Load Data Test Suite">
+            <file>./Tests/LoadDataTest.php</file>
+        </testsuite>
         <testsuite name="Query Builder Test Suite">
-            <directory>./Tests/</directory>
+            <file>./Tests/SqliteQueryBuilderTest.php</file>
+            <file>./Tests/MysqlQueryBuilderTest.php</file>
+            <file>./Tests/PsqlQueryBuilderTest.php</file>
         </testsuite>
     </testsuites>
 

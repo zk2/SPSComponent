@@ -41,14 +41,7 @@ class MysqlQueryBuilderTest extends AbstractQueryBuilderTest
             ],
         ];
 
-        $this->dbParams = [
-            'driver' => 'pdo_mysql',
-            'host' => getenv('MySql_host'),
-            'port' => getenv('MySql_port'),
-            'user' => getenv('MySql_username'),
-            'password' => getenv('MySql_password'),
-            'dbname' => getenv('MySql_database'),
-        ];
+        $this->preSetUp('pdo_mysql');
 
         parent::setUp();
 
@@ -63,38 +56,30 @@ class MysqlQueryBuilderTest extends AbstractQueryBuilderTest
         $this->initLogger('mysql_orm_object');
         $this->addToLog('BASE WHERE DATA');
 
-        parent::testOrmObjectQueryBuilder();
+        $this->runTestOrmObjectQueryBuilder();
 
         $this->addToLog('SORTABLE NULLS WALKER');
-        $this->orderByData = [['city.id', 'asc']];
-        $this->limit = 2;
-        $this->offset = 0;
         foreach ([SortableNullsWalker::NULLS_LAST, SortableNullsWalker::NULLS_FIRST] as $type) {
-            $container = $this->getContainer([]);
-            $ormQb = $this->getOrmQueryBuilder();
-            $ormQb->select('country, capital');
-            $qb = $this->buildOrmQuery($ormQb, $container);
-            $qb->setHint(Query::HINT_CUSTOM_OUTPUT_WALKER, SortableNullsWalker::class);
-            $qb->setHint('SortableNullsWalker.fields', ['city.id' => $type]);
-            /** @var Country[] $result */
-            $result = $qb->getResult($this->limit, $this->offset);
-
-            if ($this->debug > 2) {
-                $resultArray = array_map(
-                    function (Country $country) {
-                        return $country->toArray();
-                    },
-                    $result
-                );
-                print_r($resultArray);
-            }
-
-            if (SortableNullsWalker::NULLS_LAST === $type) {
-                $this->assertInstanceOf(City::class, $result[0]->getCapital());
-                $this->assertInstanceOf(City::class, $result[1]->getCapital());
-            } else {
-                $this->assertTrue(null === $result[0]->getCapital());
-                $this->assertTrue(null === $result[1]->getCapital());
+            foreach (['asc', 'desc'] as $direction) {
+                $this->orderByData = [['city.id', $direction]];
+                $container = $this->getContainer([]);
+                $ormQb = $this->getOrmQueryBuilder();
+                $ormQb->select('country, capital');
+                $qb = $this->buildOrmQuery($ormQb, $container);
+                $qb->setHint(Query::HINT_CUSTOM_OUTPUT_WALKER, SortableNullsWalker::class);
+                $qb->setHint('SortableNullsWalker.fields', ['city.id' => $type]);
+                /** @var Country[] $result */
+                $result = $qb->getResult(2, 0);
+                if ($this->debug > 2) {
+                    print_r($this->getCountriesAsArray($result));
+                }
+                if (SortableNullsWalker::NULLS_LAST === $type) {
+                    $this->assertInstanceOf(City::class, $result[0]->getCapital(), sprintf('%s -> %s', $type, $direction));
+                    $this->assertInstanceOf(City::class, $result[1]->getCapital(), sprintf('%s -> %s', $type, $direction));
+                } else {
+                    $this->assertTrue(null === $result[0]->getCapital(), sprintf('%s -> %s', $type, $direction));
+                    $this->assertTrue(null === $result[1]->getCapital(), sprintf('%s -> %s', $type, $direction));
+                }
             }
         }
     }
@@ -107,32 +92,30 @@ class MysqlQueryBuilderTest extends AbstractQueryBuilderTest
         $this->initLogger('mysql_orm_array');
         $this->addToLog('BASE WHERE DATA');
 
-        parent::testOrmArrayQueryBuilder();
+        $this->runTestOrmArrayQueryBuilder();
 
         $this->addToLog('SORTABLE NULLS WALKER');
-        $this->orderByData = [['city.id', 'asc']];
-        $this->limit = 2;
-        $this->offset = 0;
         foreach ([SortableNullsWalker::NULLS_LAST, SortableNullsWalker::NULLS_FIRST] as $type) {
-            $container = $this->getContainer([]);
-            $ormQb = $this->getOrmQueryBuilder();
-            $ormQb->select('country.name AS country_name, city.name AS capital_name');
-            $qb = $this->buildOrmQuery($ormQb, $container);
-            $qb->setHint(Query::HINT_CUSTOM_OUTPUT_WALKER, SortableNullsWalker::class);
-            $qb->setHint('SortableNullsWalker.fields', ['city.id' => $type]);
-            /** @var Country[] $result */
-            $result = $qb->getResult($this->limit, $this->offset);
-
-            if ($this->debug > 2) {
-                print_r($result);
-            }
-
-            if (SortableNullsWalker::NULLS_LAST === $type) {
-                $this->assertTrue(null !== $result[0]['capital_name']);
-                $this->assertTrue(null !== $result[1]['capital_name']);
-            } else {
-                $this->assertTrue(null === $result[0]['capital_name']);
-                $this->assertTrue(null === $result[1]['capital_name']);
+            foreach (['asc', 'desc'] as $direction) {
+                $this->orderByData = [['city.id', $direction]];
+                $container = $this->getContainer([]);
+                $ormQb = $this->getOrmQueryBuilder();
+                $ormQb->select('country.name AS country_name, city.name AS capital_name');
+                $qb = $this->buildOrmQuery($ormQb, $container);
+                $qb->setHint(Query::HINT_CUSTOM_OUTPUT_WALKER, SortableNullsWalker::class);
+                $qb->setHint('SortableNullsWalker.fields', ['city.id' => $type]);
+                /** @var Country[] $result */
+                $result = $qb->getResult(2, 0);
+                if ($this->debug > 2) {
+                    print_r($result);
+                }
+                if (SortableNullsWalker::NULLS_LAST === $type) {
+                    $this->assertTrue(null !== $result[0]['capital_name'], sprintf('%s -> %s', $type, $direction));
+                    $this->assertTrue(null !== $result[1]['capital_name'], sprintf('%s -> %s', $type, $direction));
+                } else {
+                    $this->assertTrue(null === $result[0]['capital_name'], sprintf('%s -> %s', $type, $direction));
+                    $this->assertTrue(null === $result[1]['capital_name'], sprintf('%s -> %s', $type, $direction));
+                }
             }
         }
     }
@@ -150,30 +133,29 @@ class MysqlQueryBuilderTest extends AbstractQueryBuilderTest
         $this->initLogger('mysql_dbal');
         $this->addToLog('BASE WHERE DATA');
 
-        parent::testDBALQueryBuilder();
+        $this->runTestDBALQueryBuilder();
 
         $this->addToLog('SORTABLE NULLS WALKER');
-        $this->limit = 2;
-        $this->offset = 0;
         foreach ([SortableNullsWalker::NULLS_LAST, SortableNullsWalker::NULLS_FIRST] as $type) {
-            $sortExpr = SortableNullsWalker::NULLS_LAST === $type ? 'ISNULL(city.id), city.id' : 'city.id';
-            $this->orderByData = [[$sortExpr, 'asc']];
-            $container = $this->getContainer([]);
-            $dbalQb = $this->getDbalQueryBuilder();
-            $dbalQb->select('country.name AS country_name, capital.name AS capital_name');
-            $qb = $this->buildDbalQuery($dbalQb, $container);
-            $result = $qb->getResult($this->limit, $this->offset);
-
-            if ($this->debug > 2) {
-                print_r($result);
-            }
-
-            if (SortableNullsWalker::NULLS_LAST === $type) {
-                $this->assertTrue(null !== $result[0]['capital_name']);
-                $this->assertTrue(null !== $result[1]['capital_name']);
-            } else {
-                $this->assertTrue(null === $result[0]['capital_name']);
-                $this->assertTrue(null === $result[1]['capital_name']);
+            foreach (['asc', 'desc'] as $direction) {
+                $nullDirection = SortableNullsWalker::NULLS_LAST === $type ? 'ASC' : 'DESC';
+                $sortExpr = sprintf('ISNULL(city.id) %s, city.id', $nullDirection);
+                $this->orderByData = [[$sortExpr, $direction]];
+                $container = $this->getContainer([]);
+                $dbalQb = $this->getDbalQueryBuilder();
+                $dbalQb->select('country.name AS country_name, capital.name AS capital_name');
+                $qb = $this->buildDbalQuery($dbalQb, $container);
+                $result = $qb->getResult(2, 0);
+                if ($this->debug > 2) {
+                    print_r($result);
+                }
+                if (SortableNullsWalker::NULLS_LAST === $type) {
+                    $this->assertTrue(null !== $result[0]['capital_name'], sprintf('%s -> %s', $type, $direction));
+                    $this->assertTrue(null !== $result[1]['capital_name'], sprintf('%s -> %s', $type, $direction));
+                } else {
+                    $this->assertTrue(null === $result[0]['capital_name'], sprintf('%s -> %s', $type, $direction));
+                    $this->assertTrue(null === $result[1]['capital_name'], sprintf('%s -> %s', $type, $direction));
+                }
             }
         }
     }

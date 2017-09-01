@@ -6,3 +6,4 @@
 !/Tests/logs
 /Tests/logs/*
 !Tests/logs/.gitkeep
+/Tests/TmpTest.php
