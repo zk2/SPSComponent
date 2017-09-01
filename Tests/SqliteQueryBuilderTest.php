@@ -39,7 +39,7 @@ class SqliteQueryBuilderTest extends AbstractQueryBuilderTest
         $this->initLogger('sqlite_orm_object');
         $this->addToLog('BASE WHERE DATA');
 
-        parent::testOrmObjectQueryBuilder();
+        $this->runTestOrmObjectQueryBuilder();
     }
 
     /**
@@ -50,7 +50,7 @@ class SqliteQueryBuilderTest extends AbstractQueryBuilderTest
         $this->initLogger('sqlite_orm_array');
         $this->addToLog('BASE WHERE DATA');
 
-        parent::testOrmArrayQueryBuilder();
+        $this->runTestOrmArrayQueryBuilder();
     }
 
     /**
@@ -61,7 +61,7 @@ class SqliteQueryBuilderTest extends AbstractQueryBuilderTest
         $this->initLogger('sqlite_dbal');
         $this->addToLog('BASE WHERE DATA');
 
-        parent::testDBALQueryBuilder();
+        $this->runTestDBALQueryBuilder();
     }
 
     /**

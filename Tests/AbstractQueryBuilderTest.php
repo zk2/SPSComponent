@@ -10,21 +10,21 @@
 
 namespace Tests;
 
+use Tests\Entity\City;
+use Tests\Entity\Continent;
+use Tests\Entity\Country;
+use Tests\Entity\CountryLanguage;
+use Tests\Entity\Region;
 use Cobaia\Doctrine\MonologSQLLogger;
+use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Query\Parameter;
-use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\DBAL\Query\QueryBuilder as DBALBuilder;
 use Doctrine\ORM\QueryBuilder as ORMBuilder;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
-use Tests\Entity\City;
-use Tests\Entity\Continent;
-use Tests\Entity\Country;
-use Tests\Entity\CountryLanguage;
-use Tests\Entity\Region;
 use Zk2\SpsComponent\Condition\ContainerInterface;
 use Zk2\SpsComponent\QueryBuilderFactory;
 use Zk2\SpsComponent\QueryBuilderInterface;
@@ -42,17 +42,7 @@ abstract class AbstractQueryBuilderTest extends TestCase
     /**
      * @var array $dbParams
      */
-    protected $dbParams = [];
-
-    /**
-     * @var int
-     */
-    protected $limit = 4;
-
-    /**
-     * @var int
-     */
-    protected $offset = 10;
+    protected $dbParams = ['driver' => 'pdo_sqlite', 'memory' => true];
 
     /**
      * @var int
@@ -68,8 +58,8 @@ abstract class AbstractQueryBuilderTest extends TestCase
      * @var array
      */
     protected $orderByData = [
-        //['country.name', 'asc'],
-        ['property' => 'country.population', 'direction' => 'asc'],
+        ['country.name', 'asc'],
+        ['country.population', 'asc'],
     ];
 
     /**
@@ -167,39 +157,87 @@ abstract class AbstractQueryBuilderTest extends TestCase
     }
 
     /**
-     * testOrmObjectQueryBuilder
+     * @param string $driver
+     *
+     * @throws \Exception
      */
-    public function testOrmObjectQueryBuilder()
+    protected function preSetUp($driver)
     {
+        $prefix = null;
+        switch ($driver) {
+            case 'pdo_pgsql':
+                $prefix = 'PgSql';
+                break;
+            case 'pdo_mysql':
+                $prefix = 'MySql';
+                break;
+            case 'pdo_sqlite':
+                return;
+            default:
+                throw new \Exception(sprintf('Driver "%s" isn\'t supported', $driver));
+        }
+        $this->dbParams = [
+            'driver' => $driver,
+            'host' => getenv(sprintf('%s_host', $prefix)),
+            'port' => getenv(sprintf('%s_port', $prefix)),
+            'user' => getenv(sprintf('%s_username', $prefix)),
+            'password' => getenv(sprintf('%s_password', $prefix)),
+            'dbname' => getenv(sprintf('%s_database', $prefix)),
+        ];
+    }
+
+    /**
+     * runTestOrmObjectQueryBuilder
+     */
+    protected function runTestOrmObjectQueryBuilder()
+    {
+        $this->addToLog('BASE WHERE DATA');
         $container = $this->getContainer($this->baseWhereData);
         $ormQb = $this->getOrmQueryBuilder();
         $ormQb->select('country, continent, region, capital, city');
 
         $qb = $this->buildOrmQuery($ormQb, $container);
 
-        $result = array_map(
-            function (Country $country) {
-                return $country->toArray();
-            },
-            $qb->getResult($this->limit, $this->offset)
-        );
+        $result = $this->getCountriesAsArray($qb->getResult(4, 10));
 
         if ($this->debug > 2) {
             print_r($result);
         }
 
         $this->assertTrue($qb->totalResultCount() > 0);
-        $this->assertTrue(count($result) > 0);
-        $this->assertTrue($qb->currentResultCount() === $this->limit);
+        $this->assertTrue(count($result) === 4);
+        $this->assertTrue($qb->currentResultCount() === 4);
         $this->assertContains('SELECT', $ormQb->getDQL());
         $this->assertContains('SELECT', $ormQb->getQuery()->getSQL());
+
+        $this->addToLog('IS NULL :: IS NOT NULL');
+        $this->orderByData = [];
+        foreach (['isNull', 'isNotNull'] as $type) {
+            $container = $this->getContainer($this->getSingleCondition('capital.id', $type));
+            $ormQb = $this->getOrmQueryBuilder();
+            $ormQb->select('country, capital');
+            $qb = $this->buildOrmQuery($ormQb, $container);
+            /** @var Country[] $result */
+            $result = $qb->getResult(2, 0);
+            if ($this->debug > 2) {
+                print_r($this->getCountriesAsArray($result));
+            }
+            if ('isNull' === $type) {
+                $this->assertTrue(null === $result[0]->getCapital());
+                $this->assertTrue(null === $result[1]->getCapital());
+            } else {
+                $this->assertTrue(null !== $result[0]->getCapital());
+                $this->assertTrue(null !== $result[1]->getCapital());
+            }
+        }
     }
 
     /**
-     * testOrmArrayQueryBuilder
+     * runTestOrmArrayQueryBuilder
      */
-    public function testOrmArrayQueryBuilder()
+    protected function runTestOrmArrayQueryBuilder()
     {
+        $this->addToLog('BASE WHERE DATA');
         $container = $this->getContainer($this->baseWhereData);
         $ormQb = $this->getOrmQueryBuilder();
         $ormQb->select(
@@ -214,7 +252,7 @@ abstract class AbstractQueryBuilderTest extends TestCase
 
         $qb = $this->buildOrmQuery($ormQb, $container);
 
-        $result = $qb->getResult($this->limit, $this->offset);
+        $result = $qb->getResult(4, 10);
 
         if ($this->debug > 2) {
             print_r($result);
@@ -222,16 +260,78 @@ abstract class AbstractQueryBuilderTest extends TestCase
 
         $this->assertTrue($qb->totalResultCount() > 0);
         $this->assertTrue(count($result) > 0);
-        $this->assertTrue($qb->currentResultCount() === $this->limit);
+        $this->assertTrue($qb->currentResultCount() === 4);
         $this->assertContains('SELECT', $ormQb->getDQL());
         $this->assertContains('SELECT', $ormQb->getQuery()->getSQL());
+
+        $this->addToLog('IS NULL :: IS NOT NULL');
+        $this->orderByData = [];
+        foreach (['isNull', 'isNotNull'] as $type) {
+            $container = $this->getContainer($this->getSingleCondition('capital.id', $type));
+            $ormQb = $this->getOrmQueryBuilder();
+            $ormQb->select('country.name AS country_name, capital.name AS capital_name');
+            $qb = $this->buildOrmQuery($ormQb, $container);
+            /** @var Country[] $result */
+            $result = $qb->getResult(2, 0);
+            if ($this->debug > 2) {
+                print_r($result);
+            }
+            if ('isNotNull' === $type) {
+                $this->assertTrue(null !== $result[0]['capital_name']);
+                $this->assertTrue(null !== $result[1]['capital_name']);
+            } else {
+                $this->assertTrue(null === $result[0]['capital_name']);
+                $this->assertTrue(null === $result[1]['capital_name']);
+            }
+        }
+
+        $this->addToLog('ORDER BY ALIAS');
+        foreach (['asc', 'desc'] as $direction) {
+            $this->orderByData = [['country_name', $direction]];
+            $container = $this->getContainer([]);
+            $ormQb = $this->getOrmQueryBuilder();
+            $ormQb->select(['country.name AS country_name, region.name region_name', 'continent.name continent_name']);
+            $ormQb->addSelect(['country.id']);
+            $qb = $this->buildOrmQuery($ormQb, $container);
+            /** @var Country[] $result */
+            $result = $qb->getResult(2, 0);
+            if ($this->debug > 2) {
+                print_r($result);
+            }
+            if ('asc' === $direction) {
+                $this->assertTrue(stripos($result[0]['country_name'], 'a') === 0);
+            } else {
+                $this->assertTrue(stripos($result[0]['country_name'], 'z') === 0);
+            }
+        }
+
+//        $this->addToLog('ORDER BY ALIAS (FUNCTION)');
+//        foreach (['asc', 'desc'] as $direction) {
+//            $this->orderByData = [['count(city.id)', $direction]];
+//            $container = $this->getContainer([]);
+//            $ormQb = $this->getOrmQueryBuilder();
+//            $ormQb->select('country.name AS country_name, count(city.id) cnt');
+//            $ormQb->addGroupBy('country.id');
+//            $qb = $this->buildOrmQuery($ormQb, $container);
+//            /** @var Country[] $result */
+//            $result = $qb->getResult(1, 0);
+//            if ($this->debug > 2) {
+//                print_r($result);
+//            }
+//            if ('asc' === $direction) {
+//                $this->assertTrue((int) $result[0]['cnt'] === 0);
+//            } else {
+//                $this->assertTrue((int) $result[0]['cnt'] > 300);
+//            }
+//        }
     }
 
     /**
-     * testDBALQueryBuilder
+     * runTestDBALQueryBuilder
      */
-    public function testDBALQueryBuilder()
+    protected function runTestDBALQueryBuilder()
     {
+        $this->addToLog('BASE WHERE DATA');
         $container = $this->getContainer($this->baseWhereData);
         $dbalQb = $this->getDbalQueryBuilder();
         $dbalQb
@@ -240,7 +340,7 @@ abstract class AbstractQueryBuilderTest extends TestCase
 
         $qb = $this->buildDbalQuery($dbalQb, $container);
 
-        $result = $qb->getResult($this->limit, $this->offset);
+        $result = $qb->getResult(4, 10);
 
         if ($this->debug > 2) {
             print_r($result);
@@ -248,16 +348,69 @@ abstract class AbstractQueryBuilderTest extends TestCase
 
         $this->assertTrue($qb->totalResultCount() > 0);
         $this->assertTrue(count($result) > 0);
-        $this->assertTrue($qb->currentResultCount() === $this->limit);
+        $this->assertTrue($qb->currentResultCount() === 4);
         $this->assertContains('SELECT', $dbalQb->getSQL());
-    }
 
-    /**
-     * @param array $data
-     *
-     * @return ContainerInterface
-     */
-    abstract protected function getContainer(array $data);
+        $this->addToLog('IS NULL :: IS NOT NULL');
+        $this->orderByData = [];
+        foreach (['isNull', 'isNotNull'] as $type) {
+            $container = $this->getContainer($this->getSingleCondition('capital.id', $type));
+            $dbalQb = $this->getDbalQueryBuilder();
+            $dbalQb->select('country.name AS country_name, capital.name AS capital_name');
+            $qb = $this->buildDbalQuery($dbalQb, $container);
+            $result = $qb->getResult(2, 0);
+            if ($this->debug > 2) {
+                print_r($result);
+            }
+            if ('isNotNull' === $type) {
+                $this->assertTrue(null !== $result[0]['capital_name']);
+                $this->assertTrue(null !== $result[1]['capital_name']);
+            } else {
+                $this->assertTrue(null === $result[0]['capital_name']);
+                $this->assertTrue(null === $result[1]['capital_name']);
+            }
+        }
+
+        $this->addToLog('ORDER BY ALIAS');
+        foreach (['asc', 'desc'] as $direction) {
+            $this->orderByData = [['country_name', $direction]];
+            $container = $this->getContainer([]);
+            $dbalQb = $this->getDbalQueryBuilder();
+            $dbalQb->select(['country.name AS country_name, region.name region_name', 'continent.name continent_name']);
+            $dbalQb->addSelect(['country.id']);
+            $qb = $this->buildDbalQuery($dbalQb, $container);
+            /** @var Country[] $result */
+            $result = $qb->getResult(2, 0);
+            if ($this->debug > 2) {
+                print_r($result);
+            }
+            if ('asc' === $direction) {
+                $this->assertTrue(stripos($result[0]['country_name'], 'a') === 0);
+            } else {
+                $this->assertTrue(stripos($result[0]['country_name'], 'z') === 0);
+            }
+        }
+
+        $this->addToLog('ORDER BY ALIAS (FUNCTION)');
+        foreach (['asc', 'desc'] as $direction) {
+            $this->orderByData = [['count(city.id)', $direction]];
+            $container = $this->getContainer([]);
+            $dbalQb = $this->getDbalQueryBuilder();
+            $dbalQb->select('country.name AS country_name, count(city.id) cnt');
+            $dbalQb->addGroupBy('country.id');
+            $qb = $this->buildDbalQuery($dbalQb, $container);
+            /** @var Country[] $result */
+            $result = $qb->getResult(1, 0);
+            if ($this->debug > 2) {
+                print_r($result);
+            }
+            if ('asc' === $direction) {
+                $this->assertTrue((int) $result[0]['cnt'] === 0);
+            } else {
+                $this->assertTrue((int) $result[0]['cnt'] > 300);
+            }
+        }
+    }
 
     /**
      * @param ORMBuilder         $ormQb
@@ -365,7 +518,6 @@ abstract class AbstractQueryBuilderTest extends TestCase
     protected function addToLog($message, array $params = null)
     {
         $this->logger->startQuery(sprintf('%s %s %s', str_repeat('#', 30), $message, str_repeat('#', 30)), $params);
-        //$this->logger->stopQuery();
     }
 
     /**
@@ -393,6 +545,30 @@ abstract class AbstractQueryBuilderTest extends TestCase
             ],
         ];
     }
+
+    /**
+     * @param Country[] $countries
+     *
+     * @return array
+     */
+    protected function getCountriesAsArray(array $countries)
+    {
+        $array = array_map(
+            function (Country $country) {
+                return $country->toArray();
+            },
+            $countries
+        );
+
+        return $array;
+    }
+
+    /**
+     * @param array $data
+     *
+     * @return ContainerInterface
+     */
+    abstract protected function getContainer(array $data);
 
     /**
      * loadData

@@ -122,23 +122,6 @@ Zk2\SpsComponent
         ],
     ]
 
-Demo
-----
-[https://sf.zeka.pp.ua](https://sf.zeka.pp.ua)
-
-Documentation
--------------
-
-[Quick start](https://github.com/zk2/SPSBundle/blob/dev/Resources/doc/index.rst)
-
-[Custom settings](https://github.com/zk2/SPSBundle/blob/dev/Resources/doc/settings.rst)
-
-[Usage](https://github.com/zk2/SPSBundle/blob/dev/Resources/doc/usage.rst)
-
-[Column options](https://github.com/zk2/SPSBundle/blob/dev/Resources/doc/column_options.rst)
-
-[Filter options](https://github.com/zk2/SPSBundle/blob/dev/Resources/doc/filter_options.rst)
-
 Running the Tests
 -----------------
 

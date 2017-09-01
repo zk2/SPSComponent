@@ -15,6 +15,7 @@ use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query\Expr\Base;
 use Doctrine\ORM\Query\Expr\From;
 use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\Query\Expr\OrderBy;
 use Doctrine\ORM\Query\Parameter;
 use Doctrine\ORM\QueryBuilder;
 use Zk2\SpsComponent\Condition\Condition;
@@ -53,6 +54,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
      */
     public function buildWhere(ContainerInterface $container)
     {
+        $this->initRoot();
         $condition = $this->doBuildWhere($container);
         if ($this->condition = $this->trimAndOr($condition)) {
             $this->queryBuilder->andWhere($this->condition);
@@ -72,17 +74,76 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
      */
     public function getResult($limit = 0, $offset = 0)
     {
-        if ($limit > 0 and false === $this->limitOffset($limit, $offset)) {
-            return [];
+        $this->count();
+        $this->queryBuilder->setFirstResult($offset)->setMaxResults($limit);
+
+        if ($limit > 0) {
+            $pathOrderBy = $this->getSqlPart($this->queryBuilder, 'orderBy');
+            $this->resetSqlParts($this->queryBuilder, ['orderBy']);
+            $qb = $this->clone($this->queryBuilder);
+            $qb->select(sprintf('%s', $this->aliasDotPrimary()))
+                ->setFirstResult(null)
+                ->setMaxResults(null);
+
+            /** @var OrderBy $part */
+            foreach ($pathOrderBy as $part) {
+                foreach ($part->getParts() as $order) {
+                    $out = [];
+                    preg_match('/(.*[^\s])?\s+(asc|desc)/i', $order, $out);
+                    $property = strtolower($out[1]);
+                    $direction = $out[2];
+                    $alias = ($key = array_search($property, $this->aliasMapping)) ?: $property;
+                    if ($this->isAggFunc($property)) {
+                        $qb->addSelect($property.' AS '.$alias);
+                        $qb->addOrderBy($alias, $direction);
+                        $this->queryBuilder->addOrderBy($alias, $direction);
+                    } else {
+                        $qb->addOrderBy($property, $direction);
+                        $this->queryBuilder->addOrderBy($property, $direction);
+                    }
+                }
+            }
+
+            $query = $qb->getQuery();
+
+            foreach ($this->hints as $name => $hint) {
+                $query->setHint($name, $hint);
+            }
+
+            $params = $types = [];
+            /** @var Parameter $parameter */
+            foreach ($query->getParameters() as $key => $parameter) {
+                $params[$key] = $parameter->getValue();
+                $types[$key] = $parameter->getType();
+            }
+
+            /** @var \PDOStatement $stmt */
+            $stmt = $this->queryBuilder->getEntityManager()->getConnection()->executeQuery(
+                $query->getSQL(),
+                $params,
+                $types
+            );
+
+            $ids = $stmt->fetchAll(\PDO::FETCH_UNIQUE | \PDO::FETCH_COLUMN, 0);
+
+            if (!$ids) {
+                return [];
+            }
+            $ids = array_slice($ids, $offset, $limit);
+            $this->queryBuilder
+                ->setFirstResult(null)
+                ->setMaxResults(null)
+                ->where(sprintf("%s IN (:_sps_ids_)", $this->aliasDotPrimary()))
+                ->setParameters(['_sps_ids_' => $ids]);
         }
-
         $query = $this->queryBuilder->getQuery();
-
         foreach ($this->hints as $name => $hint) {
             $query->setHint($name, $hint);
         }
-
         $this->result = $query->getResult();
+        if (!$this->totalResultCount) {
+            $this->totalResultCount = count($this->result);
+        }
 
         return $this->result;
     }
@@ -195,7 +256,6 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
      */
     private function doBuildWhere(ContainerInterface $container)
     {
-        $this->initRoot();
         $condition = '';
         if ($container->getCondition()) {
             $condition .= $this->buildCondition($container);
@@ -265,6 +325,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
         if (!$condition->getParameters()) {
             return '';
         }
+
         $this->aggNumber++;
         $prefix = str_repeat('_', $this->aggNumber);
         $qb = $this->clone($this->queryBuilder);
