@@ -28,6 +28,9 @@ class MysqlQueryBuilderTest extends AbstractQueryBuilderTest
      */
     protected function setUp()
     {
+        if (!getenv('MySql_host')) {
+            $this->markTestSkipped('MySql :: Skipped');
+        }
         $this->baseWhereData['collection'][] = [
             'andOrOperator' => 'OR',
             'condition' => [

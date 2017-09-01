@@ -28,6 +28,9 @@ class PsqlQueryBuilderTest extends AbstractQueryBuilderTest
      */
     protected function setUp()
     {
+        if (!getenv('PgSql_host')) {
+            $this->markTestSkipped('PgSql :: Skipped');
+        }
         $this->baseWhereData['collection'][] = [
             'andOrOperator' => 'OR',
             'condition' => [

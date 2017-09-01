@@ -2,16 +2,16 @@
 
 <phpunit bootstrap="Tests/bootstrap.php" colors="true">
     <php>
-        <env name="PgSql_host" value="127.0.0.1"/>
-        <env name="PgSql_port" value="5432"/>
-        <env name="PgSql_database" value="sps"/>
-        <env name="PgSql_username" value="sps"/>
-        <env name="PgSql_password" value="password"/>
-        <env name="MySql_host" value="127.0.0.1"/>
-        <env name="MySql_port" value="3306"/>
-        <env name="MySql_database" value="sps"/>
-        <env name="MySql_username" value="sps"/>
-        <env name="MySql_password" value="password"/>
+        <env name="PgSql_host" value=""/>
+        <env name="PgSql_port" value=""/>
+        <env name="PgSql_database" value=""/>
+        <env name="PgSql_username" value=""/>
+        <env name="PgSql_password" value=""/>
+        <env name="MySql_host" value=""/>
+        <env name="MySql_port" value=""/>
+        <env name="MySql_database" value=""/>
+        <env name="MySql_username" value=""/>
+        <env name="MySql_password" value=""/>
     </php>
 
     <testsuites>
