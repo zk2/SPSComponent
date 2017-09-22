@@ -1,4 +1,4 @@
-FROM php:7.1
+FROM php:7.1-fpm
 
 MAINTAINER Evgeniy Budanov <budanov.ua@gmail.com>
 
