@@ -65,7 +65,7 @@ test_phpunit:
     - $DOCKER_COMPOSE_PROD pull
     - $DOCKER_COMPOSE_PROD up -d
     - docker-compose exec -T php composer install
-    - $DOCKER_COMPOSE_PROD exec -T php bin/phpunit
+    - $DOCKER_COMPOSE_PROD exec -T php vendor/bin/phpunit
 
 
 deploy_prod:
