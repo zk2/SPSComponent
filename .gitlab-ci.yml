@@ -50,7 +50,7 @@ lint_php:
     - docker-compose exec -T php composer install
     - >
       if files=$(git diff HEAD~ --name-only); then
-        docker-compose exec -T php bin/phpcs $files
+        docker-compose exec -T php vendor/bin/phpcs $files
       fi;
 #  allow_failure: true
 
