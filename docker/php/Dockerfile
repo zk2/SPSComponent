@@ -1,34 +1,28 @@
-FROM php:7.1-fpm
+FROM php:7.1-fpm-alpine
 
-MAINTAINER Evgeniy Budanov <budanov.ua@gmail.com>
-
-RUN echo "deb http://ftp.de.debian.org/debian stretch main" >> /etc/apt/sources.list
-
-RUN apt-get update \
-    && apt-get -y install \
-          git \
-          openssl \
-          unzip \
-          wget \
-          libicu-dev \
-          libpq-dev
-
-RUN docker-php-ext-install \
-        pdo \
-        pgsql \
-        mysqli \
+RUN apk add --no-cache \
+        sudo \
+        acl \
+        icu-dev \
+        postgresql-dev \
+        libmcrypt-dev \
+        git \
+    && docker-php-ext-install \
         pdo_pgsql \
         pdo_mysql \
         bcmath \
         opcache \
         intl
 
-RUN curl -sS https://getcomposer.org/installer | php \
-    && mv composer.phar /usr/local/bin/ \
-    && rm -f /usr/local/bin/composer \
-    && ln -s /usr/local/bin/composer.phar /usr/local/bin/composer
+ENV COMPOSER_ALLOW_SUPERUSER 1
+RUN curl -sS https://getcomposer.org/installer | php -- \
+      --install-dir=/usr/local/bin \
+      --filename=composer
 
-ADD conf.ini /usr/local/etc/php/conf.d/
-RUN chmod +r /usr/local/etc/php/conf.d/conf.ini
+COPY entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 WORKDIR /var/www
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["php-fpm"]

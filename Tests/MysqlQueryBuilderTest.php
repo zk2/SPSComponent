@@ -33,13 +33,13 @@ class MysqlQueryBuilderTest extends AbstractQueryBuilderTest
         }
         $this->baseWhereData['collection'][] = [
             'andOrOperator' => 'OR',
-            'condition' => [
-                'property' => 'country.name,country.localName,country.governmentForm',
+            'condition'     => [
+                'property'           => 'country.name,country.localName,country.governmentForm',
                 'comparisonOperator' => '',
-                'value' => 'Albania',
-                'function' => [
-                    'aggregate' => false,
-                    'definition' => 'FULL_TEXT_SEARCH({property}, {value} \'IN NATURAL MODE\', 1) != 0',
+                'value'              => 'Albania',
+                'function'           => [
+                    'aggregate'  => false,
+                    'definition' => 'FULL_TEXT_SEARCH({property}, {value} \'IN NATURAL MODE\', 0) != 0',
                 ],
             ],
         ];
@@ -77,8 +77,16 @@ class MysqlQueryBuilderTest extends AbstractQueryBuilderTest
                     print_r($this->getCountriesAsArray($result));
                 }
                 if (SortableNullsWalker::NULLS_LAST === $type) {
-                    $this->assertInstanceOf(City::class, $result[0]->getCapital(), sprintf('%s -> %s', $type, $direction));
-                    $this->assertInstanceOf(City::class, $result[1]->getCapital(), sprintf('%s -> %s', $type, $direction));
+                    $this->assertInstanceOf(
+                        City::class,
+                        $result[0]->getCapital(),
+                        sprintf('%s -> %s', $type, $direction)
+                    );
+                    $this->assertInstanceOf(
+                        City::class,
+                        $result[1]->getCapital(),
+                        sprintf('%s -> %s', $type, $direction)
+                    );
                 } else {
                     $this->assertTrue(null === $result[0]->getCapital(), sprintf('%s -> %s', $type, $direction));
                     $this->assertTrue(null === $result[1]->getCapital(), sprintf('%s -> %s', $type, $direction));

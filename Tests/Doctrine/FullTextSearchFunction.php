@@ -88,7 +88,9 @@ class FullTextSearchFunction extends FunctionNode
                 $parser->match(Lexer::T_CLOSE_PARENTHESIS);
                 break;
             default:
-                throw new QueryBuilderException(sprintf('Platform "%s" does not supported full text search', $platform));
+                throw new QueryBuilderException(
+                    sprintf('Platform "%s" does not supported full text search', $platform)
+                );
         }
     }
 

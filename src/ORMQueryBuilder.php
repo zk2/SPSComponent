@@ -90,7 +90,8 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
                 foreach ($part->getParts() as $order) {
                     $out = [];
                     preg_match('/(.*[^\s])?\s+(asc|desc)/i', $order, $out);
-                    $property = strtolower($out[1]);
+                    //$property = strtolower($out[1]);
+                    $property = $out[1];
                     $direction = $out[2];
                     $alias = ($key = array_search($property, $this->aliasMapping)) ?: $property;
                     if ($this->isAggFunc($property)) {
