@@ -127,7 +127,7 @@ Zk2\SpsComponent
 
 Demo
 ----
-[https://sf.zeka.pp.ua](https://sf.zeka.pp.ua)
+[https://sf.zeka.pp.ua](https://zeka.pp.ua)
 
 Documentation
 -------------
