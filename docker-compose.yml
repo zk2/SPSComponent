@@ -1,34 +1,26 @@
 version: '3'
 services:
-  mysql:
-    build: ./docker/mysql
-    command: mysqld --sql-mode=""
-    ports:
-      - "3306:3306"
-    volumes:
-      - /opt/sps_component/mysql:/var/lib/mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: U_tq-wzZ7iTh
-      MYSQL_DATABASE: sps_component
-      MYSQL_USER: sps
-      MYSQL_PASSWORD: U_tq-wzZ7iTh
-    restart: always
-  pgsql:
-    build: ./docker/pgsql
-    ports:
-      - "5432:5432"
-    volumes:
-      - /opt/sps_component/pgsql:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: sps_component
-      POSTGRES_USER: sps
-      POSTGRES_PASSWORD: U_tq-wzZ7iTh
-    restart: always
+
   php:
-    build: ./docker/php
+    image: gitlab.zeka.guru:11550/root/sps-component/php:latest
     volumes:
       - ./:/var/www
     depends_on:
       - mysql
       - pgsql
-    restart: always
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD:
+      MYSQL_DATABASE: sps
+      MYSQL_USER: sps
+      MYSQL_PASSWORD: U_tq-wzZ7iTh
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+
+  pgsql:
+    image: postgres:9.6-alpine
+    environment:
+      POSTGRES_DB: sps
+      POSTGRES_USER: sps
+      POSTGRES_PASSWORD: U_tq-wzZ7iTh

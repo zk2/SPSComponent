@@ -24,12 +24,12 @@ class Condition implements ConditionInterface
      * @var array
      */
     private $data = [
-        self::PROPERTY_OPERATOR_NAME => null,
-        self::TYPE_OPERATOR_NAME => null,
+        self::PROPERTY_OPERATOR_NAME   => null,
+        self::TYPE_OPERATOR_NAME       => null,
         self::COMPARISON_OPERATOR_NAME => null,
-        self::VALUE_OPERATOR_NAME => null,
-        self::FUNCTION_OPERATOR_NAME => [
-            self::FUNCTION_OPERATOR_AGGREGATE_NAME => false,
+        self::VALUE_OPERATOR_NAME      => null,
+        self::FUNCTION_OPERATOR_NAME   => [
+            self::FUNCTION_OPERATOR_AGGREGATE_NAME  => false,
             self::FUNCTION_OPERATOR_DEFINITION_NAME => null,
         ],
     ];
@@ -135,7 +135,7 @@ class Condition implements ConditionInterface
 
         $value = $data[self::VALUE_OPERATOR_NAME];
 
-        if (empty($value)) {
+        if (in_array($value, ['', null, []])) {
             return;
         }
 

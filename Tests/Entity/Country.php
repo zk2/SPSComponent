@@ -97,9 +97,23 @@ class Country
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="last_date",  type="datetime")
+     * @ORM\Column(name="last_date", type="datetime")
      */
     private $lastDate;
+
+    /**
+     * @var bool
+     *
+     * @ORM\Column(name="is_green",  type="boolean", options={"default": false})
+     */
+    private $isGreen;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="fts",  type="tsvector", nullable=true, length=255)
+     */
+    private $fts;
 
     /**
      * @var Continent
@@ -363,6 +377,50 @@ class Country
     }
 
     /**
+     * @return bool
+     */
+    public function isGreen()
+    {
+        return $this->isGreen;
+    }
+
+    /**
+     * @param bool $isGreen
+     *
+     * @return Country
+     */
+    public function setIsGreen($isGreen)
+    {
+        $this->isGreen = $isGreen;
+
+        return $this;
+    }
+
+    /**
+     * Set fts
+     *
+     * @param string $fts
+     *
+     * @return Country
+     */
+    public function setFts($fts)
+    {
+        $this->fts = $fts;
+
+        return $this;
+    }
+
+    /**
+     * Get fts
+     *
+     * @return string
+     */
+    public function getFts()
+    {
+        return $this->fts;
+    }
+
+    /**
      * Set continent
      *
      * @param Continent $continent
@@ -492,18 +550,18 @@ class Country
     public function toArray()
     {
         return [
-            'id' => $this->id,
-            'continent' => $this->continent->getName(),
-            'region' => $this->region->getName(),
-            'name' => $this->name,
-            'code' => $this->code,
-            'surface_area' => $this->surfaceArea,
-            'population' => $this->population,
+            'id'              => $this->id,
+            'continent'       => $this->continent->getName(),
+            'region'          => $this->region->getName(),
+            'name'            => $this->name,
+            'code'            => $this->code,
+            'surface_area'    => $this->surfaceArea,
+            'population'      => $this->population,
             'life_expectancy' => $this->lifeExpectancy,
-            'local_name' => $this->localName,
+            'local_name'      => $this->localName,
             'government_form' => $this->governmentForm,
-            'capital' => $this->capital ? $this->capital->getName() : null,
-            'last_date' => $this->lastDate ? $this->lastDate->format('c') : null,
+            'capital'         => $this->capital ? $this->capital->getName() : null,
+            'last_date'       => $this->lastDate ? $this->lastDate->format('c') : null,
         ];
     }
 }

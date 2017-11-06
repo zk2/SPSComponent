@@ -127,6 +127,7 @@ class Container implements ContainerInterface
 
     /**
      * Instance constructor.
+     *
      * @param string $type
      */
     private function __construct($type)

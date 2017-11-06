@@ -1,3 +1,6 @@
+[![pipeline status](https://gitlab.zeka.guru/root/sps-component/badges/master/pipeline.svg)](https://gitlab.zeka.guru/root/sps-component/commits/master)
+[![coverage report](https://gitlab.zeka.guru/root/sps-component/badges/master/coverage.svg)](https://gitlab.zeka.guru/root/sps-component/commits/master)
+
 Zk2\SpsComponent
 ============
 

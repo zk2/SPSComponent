@@ -10,6 +10,7 @@
 
 namespace Tests;
 
+use Doctrine\DBAL\Types\Type;
 use Tests\Entity\City;
 use Tests\Entity\Continent;
 use Tests\Entity\Country;
@@ -67,61 +68,61 @@ abstract class AbstractQueryBuilderTest extends TestCase
      */
     protected $baseWhereData = [
         'andOrOperator' => null,
-        'collection' => [
+        'collection'    => [
             [
                 'andOrOperator' => null,
-                'condition' => [
-                    'property' => 'country.name',
+                'condition'     => [
+                    'property'           => 'country.name',
                     'comparisonOperator' => 'contains',
-                    'value' => 'land',
+                    'value'              => 'land',
                 ],
             ],
             [
                 'andOrOperator' => 'OR',
-                'collection' => [
+                'collection'    => [
                     [
                         'andOrOperator' => null,
-                        'condition' => [
-                            'property' => 'country.name',
+                        'condition'     => [
+                            'property'           => 'country.name',
                             'comparisonOperator' => 'beginsWith',
-                            'value' => 'united',
+                            'value'              => 'united',
                         ],
                     ],
                     [
                         'andOrOperator' => 'AND',
-                        'collection' => [
+                        'collection'    => [
                             [
                                 'andOrOperator' => null,
-                                'condition' => [
-                                    'property' => 'city.name',
+                                'condition'     => [
+                                    'property'           => 'city.name',
                                     'comparisonOperator' => 'endsWith',
-                                    'value' => 'on',
-                                    'function' => [
-                                        'aggregate' => false,
+                                    'value'              => 'on',
+                                    'function'           => [
+                                        'aggregate'  => false,
                                         'definition' => 'lower({property})',
                                     ],
                                 ],
                             ],
                             [
                                 'andOrOperator' => 'OR',
-                                'condition' => [
-                                    'property' => 'city.name',
+                                'condition'     => [
+                                    'property'           => 'city.name',
                                     'comparisonOperator' => 'in',
-                                    'value' => ['boston', 'new york', 'dallas'],
-                                    'function' => [
-                                        'aggregate' => false,
+                                    'value'              => ['boston', 'new york', 'dallas'],
+                                    'function'           => [
+                                        'aggregate'  => false,
                                         'definition' => 'lower({property})',
                                     ],
                                 ],
                             ],
                             [
                                 'andOrOperator' => 'OR',
-                                'condition' => [
-                                    'property' => 'city.id',
+                                'condition'     => [
+                                    'property'           => 'city.id',
                                     'comparisonOperator' => 'greaterThan',
-                                    'value' => 100,
-                                    'function' => [
-                                        'aggregate' => true,
+                                    'value'              => 100,
+                                    'function'           => [
+                                        'aggregate'  => true,
                                         'definition' => 'count({property})',
                                     ],
                                 ],
@@ -138,6 +139,7 @@ abstract class AbstractQueryBuilderTest extends TestCase
      */
     protected function setUp()
     {
+        ini_set('memory_limit', '512M');
         if (in_array('-v', $_SERVER['argv'], true)) {
             $this->debug = 1;
         } elseif (in_array('-vv', $_SERVER['argv'], true)) {
@@ -150,6 +152,13 @@ abstract class AbstractQueryBuilderTest extends TestCase
             $config = Setup::createAnnotationMetadataConfiguration([__DIR__.'/Entity'], true, null, null, false);
             $this->em = EntityManager::create($this->dbParams, $config);
             $this->assertInstanceOf(EntityManager::class, $this->em);
+            if (!Type::hasType('tsvector')) {
+                Type::addType('tsvector', 'Tests\Doctrine\TsvectorType');
+                $this->em->getConnection()->getDatabasePlatform()->registerDoctrineTypeMapping(
+                    'db_tsvector',
+                    'tsvector'
+                );
+            }
             $this->loadData();
         } catch (\Exception $e) {
             $this->markTestSkipped('Skipped'.PHP_EOL.$e->getMessage());
@@ -177,12 +186,12 @@ abstract class AbstractQueryBuilderTest extends TestCase
                 throw new \Exception(sprintf('Driver "%s" isn\'t supported', $driver));
         }
         $this->dbParams = [
-            'driver' => $driver,
-            'host' => getenv(sprintf('%s_host', $prefix)),
-            'port' => getenv(sprintf('%s_port', $prefix)),
-            'user' => getenv(sprintf('%s_username', $prefix)),
+            'driver'   => $driver,
+            'host'     => getenv(sprintf('%s_host', $prefix)),
+            'port'     => getenv(sprintf('%s_port', $prefix)),
+            'user'     => getenv(sprintf('%s_username', $prefix)),
             'password' => getenv(sprintf('%s_password', $prefix)),
-            'dbname' => getenv(sprintf('%s_database', $prefix)),
+            'dbname'   => getenv(sprintf('%s_database', $prefix)),
         ];
     }
 
@@ -430,8 +439,8 @@ abstract class AbstractQueryBuilderTest extends TestCase
                 $parameters = array_map(
                     function (Parameter $parameter) {
                         return [
-                            'name' => $parameter->getName(),
-                            'type' => $parameter->getType(),
+                            'name'  => $parameter->getName(),
+                            'type'  => $parameter->getType(),
                             'value' => $parameter->getValue(),
                         ];
                     },
@@ -532,14 +541,14 @@ abstract class AbstractQueryBuilderTest extends TestCase
     {
         return [
             'andOrOperator' => null,
-            'collection' => [
+            'collection'    => [
                 [
                     'andOrOperator' => null,
-                    'condition' => [
-                        'property' => $property,
+                    'condition'     => [
+                        'property'           => $property,
                         'comparisonOperator' => $comparisonOperator,
-                        'value' => $value,
-                        'function' => $function,
+                        'value'              => $value,
+                        'function'           => $function,
                     ],
                 ],
             ],
@@ -611,7 +620,7 @@ abstract class AbstractQueryBuilderTest extends TestCase
             }
             $this->em->flush();
 
-            foreach ($countries as $countryData) {
+            foreach ($countries as $num => $countryData) {
                 $country = new Country();
                 /** @var Continent $continent */
                 $continent = $this->em->getReference(Continent::class, $countryData['continent_id']);
@@ -627,10 +636,18 @@ abstract class AbstractQueryBuilderTest extends TestCase
                     ->setPopulation($countryData['population'])
                     ->setSurfaceArea($countryData['surface_area'])
                     ->setContinent($continent)
-                    ->setRegion($region);
+                    ->setRegion($region)
+                    ->setIsGreen((bool) !($num & 1));
                 $this->em->persist($country);
             }
             $this->em->flush();
+            if ('postgresql' === $platform) {
+                $this->em->getConnection()->exec(
+                    'UPDATE country SET fts = setweight(to_tsvector(coalesce(name,\'\')), \'A\')
+                      || setweight(to_tsvector(coalesce(local_name,\'\')), \'B\')
+                      || setweight(to_tsvector(coalesce(government_form,\'\')), \'C\');'
+                );
+            }
 
             foreach ($cities as $cityData) {
                 $city = new City();

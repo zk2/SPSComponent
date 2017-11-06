@@ -1,30 +1,8 @@
 image: anydasa/docker-git-compose
 
-## TEMPLATES-START
-
-.deploy_prod_template: &deploy_prod_script
-  script:
-    - eval $(/usr/bin/ssh-agent -s)
-    - echo "$SSH_KEY" > /tmp/id_rsa && chmod 600 /tmp/id_rsa && /usr/bin/ssh-add /tmp/id_rsa
-    - ssh -o StrictHostKeyChecking=no zeka@$SSH_HOST '
-        cd /var/www/html/sps-component;
-        git fetch;
-        git checkout .;
-        git checkout '$CI_COMMIT_REF_NAME';
-        git pull origin '$CI_COMMIT_REF_NAME';
-        docker login -u gitlab-ci-token -p '"$CI_JOB_TOKEN"' '"$CI_REGISTRY"';
-        docker stop $(docker ps -qa);
-        '$DOCKER_COMPOSE_PROD' pull;
-        '$DOCKER_COMPOSE_PROD' up -d;
-        '$DOCKER_COMPOSE_PROD' exec -T php composer install;
-        '$DOCKER_COMPOSE_PROD' exec -T php vendor/bin/phpunit;
-      '
-## TEMPLATES-END
-
 stages:
   - lint
   - test
-  - deploy
 
 cache:
   paths:
@@ -32,7 +10,7 @@ cache:
 
 variables:
   DOCKER_DRIVER: overlay
-  DOCKER_COMPOSE_PROD: "docker-compose -f docker-compose.yml"
+  DOCKER_COMPOSE: "docker-compose -f docker-compose.yml"
 
 services:
   - docker:dind
@@ -45,12 +23,12 @@ lint_php:
   script:
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - apk add --update py-pip && pip install docker-compose
-    - $DOCKER_COMPOSE_PROD pull php
-    - $DOCKER_COMPOSE_PROD up -d
-    - docker-compose exec -T php composer install
+    - $DOCKER_COMPOSE pull php
+    - $DOCKER_COMPOSE up -d
+    - docker-compose exec -T php /usr/local/bin/composer install
     - >
       if files=$(git diff HEAD~ --name-only); then
-        docker-compose exec -T php bin/phpcs $files
+        docker-compose exec -T php php -d memory_limit=-1 vendor/squizlabs/php_codesniffer/bin/phpcs $files
       fi;
 #  allow_failure: true
 
@@ -62,37 +40,18 @@ test_phpunit:
   script:
     - apk add --update py-pip && pip install docker-compose
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
-    - $DOCKER_COMPOSE_PROD pull
-    - $DOCKER_COMPOSE_PROD up -d
-    - docker-compose exec -T php composer install
-    - $DOCKER_COMPOSE_PROD exec -T php bin/phpunit
-
-
-deploy_prod:
-  stage: deploy
-  when: manual
-  variables:
-    SSH_HOST: $SSH_STAGE_HOST
-  only:
-    - master
-  <<: *deploy_prod_script
-
-
-deploy_dev:
-  stage: deploy
-  when: manual
-  variables:
-    SSH_HOST: $SSH_STAGE_HOST
-  except:
-    - master
-  <<: *deploy_prod_script
-
-
-deploy_stage:
-  stage: deploy
-  when: manual
-  variables:
-    SSH_HOST: $SSH_STAGE_HOST
-  except:
-    - master
-  <<: *deploy_prod_script
+    - $DOCKER_COMPOSE pull
+    - $DOCKER_COMPOSE up -d
+    - sleep 10
+#    - > # wait for creating Postgres Database
+#      while ! $($DOCKER_COMPOSE exec -T pgsql psql -U postgres -d sps -c "select 1" > /dev/null 2>&1); do
+#        sleep 1;
+#      done;
+#    #- $DOCKER_COMPOSE exec -T mysql mysql -u root -D sps -e "select 1"
+#    - > # wait for creating MySql Database
+#      while ! $($DOCKER_COMPOSE exec -T mysql mysql -u root -D sps -e "select 1") > /dev/null 2>&1; do
+#        sleep 1;
+#      done;
+    - $DOCKER_COMPOSE exec -T php /usr/local/bin/composer install
+    - $DOCKER_COMPOSE exec -T php echo $PHPUNIT_XML > phpunit.xml
+    - $DOCKER_COMPOSE exec -T php vendor/phpunit/phpunit/phpunit
