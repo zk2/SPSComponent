@@ -20,7 +20,7 @@ Also, the component allows you to use aggregating functions in the blocks "WHERE
 Documentation
 -------------
 
-[Quick start](https://github.com/zk2/SPSBundle/blob/dev/doc/quick_start.rst)
+[Quick start](https://github.com/zk2/SPSComponent/blob/master/doc/quick_start.rst)
 
 Running the Tests
 -----------------
