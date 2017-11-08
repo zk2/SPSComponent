@@ -80,7 +80,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
         if ($limit > 0) {
             $pathOrderBy = $this->getSqlPart($this->queryBuilder, 'orderBy');
             $this->resetSqlParts($this->queryBuilder, ['orderBy']);
-            $qb = $this->clone($this->queryBuilder);
+            $qb = $this->cloneQb($this->queryBuilder);
             $qb->select(sprintf('%s', $this->aliasDotPrimary()))
                 ->setFirstResult(null)
                 ->setMaxResults(null);
@@ -157,7 +157,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
     private function count()
     {
         if (!$this->withoutTotalResultCount) {
-            $qb = $this->clone($this->queryBuilder);
+            $qb = $this->cloneQb($this->queryBuilder);
             $this->resetSqlParts($qb, ['select', 'groupBy', 'orderBy'])
                 ->setFirstResult(null)
                 ->setMaxResults(null)
@@ -172,60 +172,6 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
         }
 
         return $this->totalResultCount;
-    }
-
-    /**
-     * @param int $limit
-     * @param int $offset
-     *
-     * @return bool
-     */
-    private function limitOffset($limit, $offset)
-    {
-        if (!$this->withoutTotalResultCount and !$this->count()) {
-            return false;
-        }
-
-        $qb = $this->clone($this->queryBuilder);
-        $qb->select(sprintf('%s', $this->aliasDotPrimary()))
-            ->setFirstResult(null)
-            ->setMaxResults(null);
-
-        $query = $qb->getQuery();
-
-        foreach ($this->hints as $name => $hint) {
-            $query->setHint($name, $hint);
-        }
-
-        $params = $types = [];
-        /** @var Parameter $parameter */
-        foreach ($query->getParameters() as $key => $parameter) {
-            $params[$key] = $parameter->getValue();
-            $types[$key] = $parameter->getType();
-        }
-
-        /** @var \PDOStatement $stmt */
-        $stmt = $this->queryBuilder->getEntityManager()->getConnection()->executeQuery(
-            $query->getSQL(),
-            $params,
-            $types
-        );
-
-        $ids = $stmt->fetchAll(\PDO::FETCH_UNIQUE | \PDO::FETCH_COLUMN, 0);
-
-        if (!$ids) {
-            return false;
-        }
-
-        $ids = array_slice($ids, $offset, $limit);
-
-        $this->queryBuilder
-            ->setFirstResult(null)
-            ->setMaxResults(null)
-            ->where(sprintf("%s IN (:_sps_ids_)", $this->aliasDotPrimary()))
-            ->setParameters(['_sps_ids_' => $ids]);
-
-        return true;
     }
 
     /**
@@ -329,7 +275,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
 
         $this->aggNumber++;
         $prefix = str_repeat('_', $this->aggNumber);
-        $qb = $this->clone($this->queryBuilder);
+        $qb = $this->cloneQb($this->queryBuilder);
 
         $this->resetSqlParts($qb)
             ->select(sprintf('DISTINCT %s%s', $prefix, $this->aliasDotPrimary()))
@@ -380,7 +326,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
      *
      * @return QueryBuilder
      */
-    private function clone(QueryBuilder $qb)
+    private function cloneQb(QueryBuilder $qb)
     {
         $newQb = clone $qb;
 

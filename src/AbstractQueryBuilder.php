@@ -12,9 +12,7 @@ namespace Zk2\SpsComponent;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder as DBALQueryBuilder;
-use Doctrine\ORM\Query\Expr\Select;
 use Doctrine\ORM\QueryBuilder as ORMQueryBuilder;
-use Zk2\SpsComponent\Condition\ConditionInterface;
 
 /**
  * Class AbstractQueryBuilder
