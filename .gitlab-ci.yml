@@ -28,7 +28,7 @@ lint_php:
     - docker-compose exec -T php /usr/local/bin/composer install
     - docker-compose exec -T php /usr/local/bin/composer run phpsniffer-cmd
     - >
-      if files=$(git diff HEAD~ --name-only); then
+      if files=$(git diff HEAD~ --name-only --diff-filter=ACMRTUX); then
         docker-compose exec -T php php -d memory_limit=-1 vendor/squizlabs/php_codesniffer/bin/phpcs $files
       fi;
 #  allow_failure: true
