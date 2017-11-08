@@ -20,7 +20,7 @@ class TsvectorType extends Type
     /**
      * @return string
      */
-    public function getName(): string
+    public function getName()
     {
         return self::TSVECTOR;
     }
@@ -31,7 +31,7 @@ class TsvectorType extends Type
      *
      * @return string
      */
-    public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform): string
+    public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform)
     {
         return 'postgresql' === $platform->getName() ? self::TSVECTOR : 'varchar(255)';
     }
@@ -42,7 +42,7 @@ class TsvectorType extends Type
      *
      * @return string
      */
-    public function convertToPHPValue($value, AbstractPlatform $platform): ?string
+    public function convertToPHPValue($value, AbstractPlatform $platform)
     {
         return $value;
     }
@@ -53,7 +53,7 @@ class TsvectorType extends Type
      *
      * @return string
      */
-    public function convertToDatabaseValue($value, AbstractPlatform $platform): ?string
+    public function convertToDatabaseValue($value, AbstractPlatform $platform)
     {
         return $value;
     }
