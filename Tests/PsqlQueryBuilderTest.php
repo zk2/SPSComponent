@@ -33,12 +33,12 @@ class PsqlQueryBuilderTest extends AbstractQueryBuilderTest
         }
         $this->baseWhereData['collection'][] = [
             'andOrOperator' => 'OR',
-            'condition' => [
-                'property' => 'country.name',
+            'condition'     => [
+                'property'           => 'country.name',
                 'comparisonOperator' => '',
-                'value' => 'Albania',
-                'function' => [
-                    'aggregate' => false,
+                'value'              => 'Albania',
+                'function'           => [
+                    'aggregate'  => false,
                     'definition' => 'FULL_TEXT_SEARCH({property}, {value}, \'english\') = TRUE',
                 ],
             ],

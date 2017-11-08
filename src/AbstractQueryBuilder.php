@@ -12,9 +12,7 @@ namespace Zk2\SpsComponent;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder as DBALQueryBuilder;
-use Doctrine\ORM\Query\Expr\Select;
 use Doctrine\ORM\QueryBuilder as ORMQueryBuilder;
-use Zk2\SpsComponent\Condition\ConditionInterface;
 
 /**
  * Class AbstractQueryBuilder
@@ -135,6 +133,10 @@ abstract class AbstractQueryBuilder
                 $property = $this->aliasMapping[$property];
             }
             $direction = $field ? array_shift($field) : 'ASC';
+            $function = $field ? array_shift($field) : null;
+            if ($function) {
+                $property = sprintf("%s(%s)", $function, $property);
+            }
             $this->addOrderBy($property, $direction);
         }
 
@@ -144,7 +146,7 @@ abstract class AbstractQueryBuilder
     /**
      * @param string $func
      *
-     * @return bol
+     * @return bool
      */
     public function isAggFunc($func)
     {
@@ -321,7 +323,8 @@ abstract class AbstractQueryBuilder
                 return preg_replace(
                     '/ {2,}/',
                     ' ',
-                    strtolower(str_replace([' AS ', ' as ', ' HIDDEN '], [' ', ' ', ' '], $str))
+                    //strtolower(str_replace([' AS ', ' as ', ' HIDDEN '], [' ', ' ', ' '], $str))
+                    str_replace([' AS ', ' as ', ' HIDDEN '], [' ', ' ', ' '], $str)
                 );
             },
             $selects

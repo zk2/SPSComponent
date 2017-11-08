@@ -1,126 +1,26 @@
 Zk2\SpsComponent
-============
+================
 
+[![Build Status](https://travis-ci.org/zk2/SPSComponent.svg?branch=master)](https://travis-ci.org/zk2/SPSComponent)
 
-Часто возникает необходимость предоставить конечному пользователю возможность сложной
-фильтрации каких-либо данных. Достаточно проблематично бывает правильно расставить скобки во множестве AND/OR,
-ещё проблематичнее фильтровать/сортировать по агрегирующей функции.
+[![Latest Stable Version](https://poser.pugx.org/zk2/sps-component/v/stable)](https://packagist.org/packages/zk2/sps-component)
+[![Total Downloads](https://poser.pugx.org/zk2/sps-component/downloads)](https://packagist.org/packages/zk2/sps-component)
+[![Latest Unstable Version](https://poser.pugx.org/zk2/sps-component/v/unstable)](https://packagist.org/packages/zk2/sps-component)
+[![License](https://poser.pugx.org/zk2/sps-component/license)](https://packagist.org/packages/zk2/sps-component)
+[![composer.lock](https://poser.pugx.org/zk2/sps-component/composerlock)](https://packagist.org/packages/zk2/sps-component)
 
-Компонент предназначен для построения валидных блоков "WHERE", "OFFSET", "LIMIT" and "ORDER BY"
-в `Doctrine\DBAL\Query\QueryBuilder` | `Doctrine\ORM\QueryBuilder`.
-Так же компонент позволяет использовать агрегирующие функции в блоках "WHERE" and "ORDER BY".
+Often there is a need to provide the end user with the possibility of complex filtering any data.
+It is quite problematic to correctly place parentheses in the AND / OR set.
+It is even more problematic to filter / sort by value from the aggregating function.
 
-Пояснить лучше на примере. Пусть наше приложение имеет следующий QueryBuilder:
+The component is intended for building valid blocks "WHERE", "OFFSET", "LIMIT" and "ORDER BY"
+in `Doctrine\DBAL\Query\QueryBuilder` | `Doctrine\ORM\QueryBuilder`.
+Also, the component allows you to use aggregating functions in the blocks "WHERE" and "ORDER BY".
 
-    /** @var Doctrine\DBAL\Query\QueryBuilder|Doctrine\ORM\QueryBuilder $queryBuilder */
-    $queryBuilder
-         ->select('country, region, city')
-         ->from('AppBundle:Country', 'country')
-         ->leftJoin('country.region', 'region')
-         ->leftJoin('country.cities', 'city');
+Documentation
+-------------
 
-И пусть наше приложение позволяет пользователю фильтровать по следующим полям:
-
-    'country' => [
-        'property' => 'country.name',
-        'comparisonOperator' => ['contains', 'beginsWith'],
-    ],
-    'region' => [
-        'property' => 'region.name',
-        'comparisonOperator' => ['contains', 'endsWith'],
-        'function' => [
-            'aggregate' => false,
-            'definition' => 'LOWER({property})',
-        ],
-    ],
-    'cities_count' => [
-        'property' => 'city.id',
-        'comparisonOperator' => ['equals', 'greaterThan', 'lessThan'],
-        'function' => [
-            'aggregate' => true,
-            'definition' => 'COUNT({property})',
-        ],
-    ],
-
-Тогда из клиентского запроса вида:
-
-     collection[0][condition][property]=country
-    &collection[0][condition][comparisonOperator]=contains
-    &collection[0][condition][value]=land
-    &collection[1][andOrOperator]=OR
-    &collection[1][collection][0][condition][property]=country
-    &collection[1][collection][0][condition][comparisonOperator]=beginsWith
-    &collection[1][collection][0][condition][value]=united
-    &collection[1][collection][1][andOrOperator]=AND
-    &collection[1][collection][1][collection][0][condition][property]=region
-    &collection[1][collection][1][collection][0][condition][comparisonOperator]=endsWith
-    &collection[1][collection][1][collection][0][condition][value]=on
-    &collection[1][collection][1][collection][1][andOrOperator]=OR
-    &collection[1][collection][1][collection][1][condition][property]=cities_count
-    &collection[1][collection][1][collection][1][condition][comparisonOperator]=greaterThan
-    &collection[1][collection][1][collection][1][condition][value]=20
-    &sort[0][0]=cities_count
-    &sort[0][1]=DESC
-    &sort[1][0]=country
-    &sort[1][1]=ASC
-    &page=2
-    &limit=20
-    
-Вы можете сформировать массив вида:
-
-    [
-        'collection' => [
-            [
-                'condition' => [
-                    'property' => 'country.name',
-                    'comparisonOperator' => 'contains',
-                    'value' => 'land',
-                ],
-            ],
-            [
-                'andOrOperator' => 'OR',
-                'collection' => [
-                    [
-                        'andOrOperator' => null,
-                        'condition' => [
-                            'property' => 'country.name',
-                            'comparisonOperator' => 'beginsWith',
-                            'value' => 'united',
-                        ],
-                    ],
-                    [
-                        'andOrOperator' => 'AND',
-                        'collection' => [
-                            [
-                                'andOrOperator' => null,
-                                'condition' => [
-                                    'property' => 'region.name',
-                                    'comparisonOperator' => 'endsWith',
-                                    'value' => 'on',
-                                    'function' => [
-                                        'aggregate' => false,
-                                        'definition' => 'LOWER({property})',
-                                    ],
-                                ],
-                            ],
-                            [
-                                'andOrOperator' => 'OR',
-                                'condition' => [
-                                    'property' => 'city.id',
-                                    'comparisonOperator' => 'in',
-                                    'value' => 20,
-                                    'function' => [
-                                        'aggregate' => true,
-                                        'definition' => 'COUNT({property})',
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-        ],
-    ]
+[Quick start](https://github.com/zk2/SPSComponent/blob/master/doc/quick_start.rst)
 
 Running the Tests
 -----------------
@@ -132,12 +32,12 @@ Install the [Composer](http://getcomposer.org/) `dev` dependencies:
 Then, run the test suite using
 [PHPUnit](https://github.com/sebastianbergmann/phpunit/):
 
-    phpunit
+    vendor/bin/phpunit
 
 License
 -------
 
 This bundle is released under the MIT license. See the complete license in the bundle:
 
-    Resources/meta/LICENSE
+    LICENSE
     

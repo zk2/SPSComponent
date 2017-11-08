@@ -1,0 +1,26 @@
+version: '3'
+services:
+
+  php:
+    image: gitlab.zeka.guru:11550/root/sps-component/php:latest
+    volumes:
+      - ./:/var/www
+    depends_on:
+      - mysql
+      - pgsql
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD:
+      MYSQL_DATABASE: sps
+      MYSQL_USER: sps
+      MYSQL_PASSWORD: U_tq-wzZ7iTh
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+
+  pgsql:
+    image: postgres:9.6-alpine
+    environment:
+      POSTGRES_DB: sps
+      POSTGRES_USER: sps
+      POSTGRES_PASSWORD: U_tq-wzZ7iTh

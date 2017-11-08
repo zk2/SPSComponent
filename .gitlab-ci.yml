@@ -1,0 +1,58 @@
+image: anydasa/docker-git-compose
+
+stages:
+  - lint
+  - test
+
+cache:
+  paths:
+    - vendor/
+
+variables:
+  DOCKER_DRIVER: overlay
+  DOCKER_COMPOSE: "docker-compose -f docker-compose.yml"
+
+services:
+  - docker:dind
+
+
+lint_php:
+  stage: lint
+#  except:
+#    - master
+  script:
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - apk add --update py-pip && pip install docker-compose
+    - $DOCKER_COMPOSE pull php
+    - $DOCKER_COMPOSE up -d
+    - docker-compose exec -T php /usr/local/bin/composer install
+    - docker-compose exec -T php /usr/local/bin/composer run phpsniffer-cmd
+    - >
+      if files=$(git diff HEAD~ --name-only --diff-filter=ACMRTUX); then
+        docker-compose exec -T php php -d memory_limit=-1 vendor/squizlabs/php_codesniffer/bin/phpcs $files
+      fi;
+#  allow_failure: true
+
+
+test_phpunit:
+  stage: test
+#  except:
+#    - master
+  script:
+    - apk add --update py-pip && pip install docker-compose
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - $DOCKER_COMPOSE pull
+    - $DOCKER_COMPOSE up -d
+    - sleep 10
+#    - > # wait for creating Postgres Database
+#      while ! $($DOCKER_COMPOSE exec -T pgsql psql -U postgres -d sps -c "select 1" > /dev/null 2>&1); do
+#        sleep 1;
+#      done;
+#    #- $DOCKER_COMPOSE exec -T mysql mysql -u root -D sps -e "select 1"
+#    - > # wait for creating MySql Database
+#      while ! $($DOCKER_COMPOSE exec -T mysql mysql -u root -D sps -e "select 1") > /dev/null 2>&1; do
+#        sleep 1;
+#      done;
+    - $DOCKER_COMPOSE exec -T php /usr/local/bin/composer install
+    - $DOCKER_COMPOSE exec -T php echo $PHPUNIT_XML > phpunit.xml
+    - $DOCKER_COMPOSE exec -T php vendor/phpunit/phpunit/phpunit
