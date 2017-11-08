@@ -2,7 +2,7 @@
 [![coverage report](https://gitlab.zeka.guru/root/sps-component/badges/master/coverage.svg)](https://gitlab.zeka.guru/root/sps-component/commits/master)
 
 Zk2\SpsComponent
-============
+================
 
 
 Часто возникает необходимость предоставить конечному пользователю возможность сложной
