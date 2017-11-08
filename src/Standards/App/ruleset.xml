@@ -11,4 +11,5 @@
     <exclude-pattern>Tests/fixtures/*</exclude-pattern>
     <exclude-pattern>Tests/logs/*</exclude-pattern>
     <exclude-pattern>vendor/*</exclude-pattern>
+    <exclude-pattern>coverage.php</exclude-pattern>
 </ruleset>
