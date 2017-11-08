@@ -1,6 +1,13 @@
 Zk2\SpsComponent
 ================
 
+[![Build Status](https://travis-ci.org/zk2/SPSComponent.svg?branch=master)](https://travis-ci.org/zk2/SPSComponent)
+
+[![Latest Stable Version](https://poser.pugx.org/zk2/sps-component/v/stable)](https://packagist.org/packages/zk2/sps-component)
+[![Total Downloads](https://poser.pugx.org/zk2/sps-component/downloads)](https://packagist.org/packages/zk2/sps-component)
+[![Latest Unstable Version](https://poser.pugx.org/zk2/sps-component/v/unstable)](https://packagist.org/packages/zk2/sps-component)
+[![License](https://poser.pugx.org/zk2/sps-component/license)](https://packagist.org/packages/zk2/sps-component)
+[![composer.lock](https://poser.pugx.org/zk2/sps-component/composerlock)](https://packagist.org/packages/zk2/sps-component)
 
 Часто возникает необходимость предоставить конечному пользователю возможность сложной
 фильтрации каких-либо данных. Достаточно проблематично бывает правильно расставить скобки во множестве AND/OR,
