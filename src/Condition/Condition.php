@@ -135,7 +135,7 @@ class Condition implements ConditionInterface
 
         $value = $data[self::VALUE_OPERATOR_NAME];
 
-        if (in_array($value, ['', null, []])) {
+        if (in_array($value, ['', null, []], true)) {
             return;
         }
 
