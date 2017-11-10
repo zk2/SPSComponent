@@ -213,7 +213,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
         if ($condition->isAggregateFunction()) {
             $where = $this->aggregate($condition);
         } else {
-            $where = $condition->buildCondition();
+            $where = $condition->buildConditions();
             $this->addParameter($condition->getParameters());
         }
         if (!$where = $this->trimAndOr($where)) {

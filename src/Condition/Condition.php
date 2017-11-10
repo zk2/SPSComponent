@@ -164,7 +164,7 @@ class Condition implements ConditionInterface
      *
      * @throws ContainerException
      */
-    public function buildCondition()
+    public function buildConditions()
     {
         if (in_array($this->data[self::COMPARISON_OPERATOR_NAME], [self::TOKEN_IS_NULL, self::TOKEN_IS_NOT_NULL])) {
             $this->parameters = [];

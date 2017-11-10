@@ -136,7 +136,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
         if ($condition->isAggregateFunction()) {
             $where = $this->aggregate($condition);
         } else {
-            $where = $condition->buildCondition();
+            $where = $condition->buildConditions();
             $this->addParameter($condition->getParameters());
         }
         if (!$where = $this->trimAndOr($where)) {
