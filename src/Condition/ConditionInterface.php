@@ -134,7 +134,7 @@ interface ConditionInterface
      *
      * @throws ContainerException
      */
-    public function buildConditions();
+    public function buildCondition();
 
     /**
      * @return bool

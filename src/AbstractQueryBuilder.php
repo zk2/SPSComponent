@@ -311,7 +311,7 @@ abstract class AbstractQueryBuilder
         if ($condition->isAggregateFunction()) {
             $where = $this->aggregate($condition);
         } else {
-            $where = $condition->buildConditions();
+            $where = $condition->buildCondition();
             foreach ($condition->getParameters() as $paramName => $paramValue) {
                 $parameter = new Parameter($paramName, $paramValue);
                 $this->parameters->add($parameter);

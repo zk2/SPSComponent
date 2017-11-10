@@ -148,53 +148,6 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
     }
 
     /**
-     * @return int
-     *
-     * @throws QueryBuilderException
-     */
-    private function count()
-    {
-        if (!$this->withoutTotalResultCount) {
-            $qb = $this->cloneQb($this->queryBuilder);
-            $this->resetSqlParts($qb, ['select', 'groupBy', 'orderBy'])
-                ->setFirstResult(null)
-                ->setMaxResults(null)
-                ->select(sprintf('COUNT(DISTINCT %s)', $this->aliasDotPrimary()));
-            try {
-                $this->totalResultCount = $qb->getQuery()->getSingleScalarResult();
-            } catch (NoResultException $e) {
-                $this->totalResultCount = 0;
-            } catch (\Exception $e) {
-                throw new QueryBuilderException($e->getMessage());
-            }
-        }
-
-        return $this->totalResultCount;
-    }
-
-    /**
-     * @return $this
-     *
-     * @throws QueryBuilderException
-     */
-    private function initRoot()
-    {
-        $rootEntities = $this->queryBuilder->getRootEntities();
-        $rootAliases = $this->queryBuilder->getRootAliases();
-        if (!count($rootEntities) || !count($rootAliases)) {
-            throw new QueryBuilderException('Path "FROM" in query is empty');
-        }
-        $this->rootEntity = $rootEntities[0];
-        $this->rootAlias = $rootAliases[0];
-        $this->primary = $this->queryBuilder
-            ->getEntityManager()
-            ->getClassMetadata($this->rootEntity)
-            ->getSingleIdentifierFieldName();
-
-        return $this;
-    }
-
-    /**
      * @param ContainerInterface $container
      *
      * @return string
@@ -213,7 +166,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
         if ($condition->isAggregateFunction()) {
             $where = $this->aggregate($condition);
         } else {
-            $where = $condition->buildConditions();
+            $where = $condition->buildCondition();
             $this->addParameter($condition->getParameters());
         }
         if (!$where = $this->trimAndOr($where)) {
@@ -297,6 +250,53 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
         }
 
         return sprintf('%s IN(%s)', $this->aliasDotPrimary(), $qb->getDQL());
+    }
+
+    /**
+     * @return int
+     *
+     * @throws QueryBuilderException
+     */
+    private function count()
+    {
+        if (!$this->withoutTotalResultCount) {
+            $qb = $this->cloneQb($this->queryBuilder);
+            $this->resetSqlParts($qb, ['select', 'groupBy', 'orderBy'])
+                ->setFirstResult(null)
+                ->setMaxResults(null)
+                ->select(sprintf('COUNT(DISTINCT %s)', $this->aliasDotPrimary()));
+            try {
+                $this->totalResultCount = $qb->getQuery()->getSingleScalarResult();
+            } catch (NoResultException $e) {
+                $this->totalResultCount = 0;
+            } catch (\Exception $e) {
+                throw new QueryBuilderException($e->getMessage());
+            }
+        }
+
+        return $this->totalResultCount;
+    }
+
+    /**
+     * @return $this
+     *
+     * @throws QueryBuilderException
+     */
+    private function initRoot()
+    {
+        $rootEntities = $this->queryBuilder->getRootEntities();
+        $rootAliases = $this->queryBuilder->getRootAliases();
+        if (!count($rootEntities) || !count($rootAliases)) {
+            throw new QueryBuilderException('Path "FROM" in query is empty');
+        }
+        $this->rootEntity = $rootEntities[0];
+        $this->rootAlias = $rootAliases[0];
+        $this->primary = $this->queryBuilder
+            ->getEntityManager()
+            ->getClassMetadata($this->rootEntity)
+            ->getSingleIdentifierFieldName();
+
+        return $this;
     }
 
     /**

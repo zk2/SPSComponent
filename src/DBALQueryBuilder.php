@@ -80,44 +80,6 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
     }
 
     /**
-     * @return int
-     *
-     * @throws QueryBuilderException
-     */
-    private function count()
-    {
-        $qb = clone $this->queryBuilder;
-        $this->resetSqlParts($qb, ['orderBy'])
-            ->setFirstResult(null)
-            ->setMaxResults(null);
-        $connection = $qb->getConnection();
-        $sql = sprintf("SELECT COUNT(*) FROM (%s) _sps_cnt_", $qb->getSQL());
-        $stmt = $connection->executeQuery($sql, $qb->getParameters(), $this->parametersTypes);
-        $this->totalResultCount = $stmt->fetchColumn();
-
-        return $this->totalResultCount;
-    }
-
-    /**
-     * @param int $limit
-     * @param int $offset
-     *
-     * @return bool
-     */
-    private function limitOffset($limit, $offset)
-    {
-        if (!$this->withoutTotalResultCount && !$this->count()) {
-            return false;
-        }
-
-        $this->queryBuilder
-            ->setFirstResult($offset)
-            ->setMaxResults($limit);
-
-        return true;
-    }
-
-    /**
      * @param ContainerInterface $container
      *
      * @return string
@@ -136,7 +98,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
         if ($condition->isAggregateFunction()) {
             $where = $this->aggregate($condition);
         } else {
-            $where = $condition->buildConditions();
+            $where = $condition->buildCondition();
             $this->addParameter($condition->getParameters());
         }
         if (!$where = $this->trimAndOr($where)) {
@@ -216,6 +178,44 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
         }
 
         return sprintf('%s IN(%s)', $this->aliasDotPrimary(), $qb->getSQL());
+    }
+
+    /**
+     * @return int
+     *
+     * @throws QueryBuilderException
+     */
+    private function count()
+    {
+        $qb = clone $this->queryBuilder;
+        $this->resetSqlParts($qb, ['orderBy'])
+            ->setFirstResult(null)
+            ->setMaxResults(null);
+        $connection = $qb->getConnection();
+        $sql = sprintf("SELECT COUNT(*) FROM (%s) _sps_cnt_", $qb->getSQL());
+        $stmt = $connection->executeQuery($sql, $qb->getParameters(), $this->parametersTypes);
+        $this->totalResultCount = $stmt->fetchColumn();
+
+        return $this->totalResultCount;
+    }
+
+    /**
+     * @param int $limit
+     * @param int $offset
+     *
+     * @return bool
+     */
+    private function limitOffset($limit, $offset)
+    {
+        if (!$this->withoutTotalResultCount && !$this->count()) {
+            return false;
+        }
+
+        $this->queryBuilder
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
+
+        return true;
     }
 
     /**

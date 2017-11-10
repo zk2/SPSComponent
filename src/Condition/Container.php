@@ -127,6 +127,27 @@ class Container implements ContainerInterface
     }
 
     /**
+     * @param string $andOr
+     *
+     * @return self
+     *
+     * @throws ContainerException
+     */
+    public function setAndOr($andOr)
+    {
+        if ($andOr = strtoupper($andOr)) {
+            if (!in_array($andOr, self::AND_OR_OPERATORS)) {
+                throw new ContainerException(
+                    sprintf('Invalid operator. Use %s', implode(' or ', self::AND_OR_OPERATORS))
+                );
+            }
+            $this->andOr = $andOr;
+        }
+
+        return $this;
+    }
+
+    /**
      * Instance constructor.
      *
      * @param string $type
@@ -139,26 +160,5 @@ class Container implements ContainerInterface
         } else {
             $this->condition = new Condition();
         }
-    }
-
-    /**
-     * @param string $andOr
-     *
-     * @return self
-     *
-     * @throws ContainerException
-     */
-    private function setAndOr($andOr)
-    {
-        if ($andOr = strtoupper($andOr)) {
-            if (!in_array($andOr, self::AND_OR_OPERATORS)) {
-                throw new ContainerException(
-                    sprintf('Invalid operator. Use %s', implode(' or ', self::AND_OR_OPERATORS))
-                );
-            }
-            $this->andOr = $andOr;
-        }
-
-        return $this;
     }
 }
