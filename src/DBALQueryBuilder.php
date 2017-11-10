@@ -152,6 +152,8 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
 
     /**
      * @param array $parameters
+     *
+     * @return void
      */
     protected function addParameter(array $parameters)
     {

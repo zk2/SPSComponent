@@ -328,6 +328,11 @@ abstract class AbstractQueryBuilder
         );
     }
 
+    /**
+     * @param array $parameters
+     *
+     * @return mixed
+     */
     abstract protected function addParameter(array $parameters);
 
     /**

@@ -229,6 +229,8 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
 
     /**
      * @param array $parameters
+     *
+     * @return void
      */
     protected function addParameter(array $parameters)
     {
