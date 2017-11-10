@@ -68,7 +68,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
      */
     public function getResult($limit = 0, $offset = 0)
     {
-        if ($limit > 0 and false === $this->limitOffset($limit, $offset)) {
+        if ($limit > 0 && false === $this->limitOffset($limit, $offset)) {
             return [];
         }
 
@@ -105,7 +105,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
      */
     private function limitOffset($limit, $offset)
     {
-        if (!$this->withoutTotalResultCount and !$this->count()) {
+        if (!$this->withoutTotalResultCount && !$this->count()) {
             return false;
         }
 
@@ -223,7 +223,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
             $newParameters[str_replace(':', ':'.$prefix, $paramName)] = $paramValue;
         }
 
-        if (count($newParameters) === 2 and stripos($condition->getComparisonOperator(), Condition::BETWEEN) !== false) {
+        if (count($newParameters) === 2 && stripos($condition->getComparisonOperator(), Condition::BETWEEN) !== false) {
             $newParameterName = implode(' AND ', array_keys($newParameters));
         } else {
             $newParameterName = key($newParameters);

@@ -90,7 +90,6 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
                 foreach ($part->getParts() as $order) {
                     $out = [];
                     preg_match('/(.*[^\s])?\s+(asc|desc)/i', $order, $out);
-                    //$property = strtolower($out[1]);
                     $property = $out[1];
                     $direction = $out[2];
                     $alias = ($key = array_search($property, $this->aliasMapping)) ?: $property;
@@ -183,7 +182,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
     {
         $rootEntities = $this->queryBuilder->getRootEntities();
         $rootAliases = $this->queryBuilder->getRootAliases();
-        if (!count($rootEntities) or !count($rootAliases)) {
+        if (!count($rootEntities) || !count($rootAliases)) {
             throw new QueryBuilderException('Path "FROM" in query is empty');
         }
         $this->rootEntity = $rootEntities[0];
@@ -305,7 +304,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
             $newParameters[str_replace(':', ':'.$prefix, $paramName)] = $paramValue;
         }
 
-        if (count($newParameters) === 2 and stripos($condition->getComparisonOperator(), Condition::BETWEEN) !== false) {
+        if (count($newParameters) === 2 && stripos($condition->getComparisonOperator(), Condition::BETWEEN) !== false) {
             $newParameterName = implode(' AND ', array_keys($newParameters));
         } else {
             $newParameterName = key($newParameters);

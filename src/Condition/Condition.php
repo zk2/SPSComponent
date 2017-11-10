@@ -95,7 +95,7 @@ class Condition implements ConditionInterface
      */
     public function isAggregateFunction()
     {
-        return $this->getFunction() and $this->getFunction()[self::FUNCTION_OPERATOR_AGGREGATE_NAME];
+        return $this->getFunction() && $this->getFunction()[self::FUNCTION_OPERATOR_AGGREGATE_NAME];
     }
 
     /**
@@ -111,7 +111,7 @@ class Condition implements ConditionInterface
                 throw new ContainerException(sprintf('Property "%s" not exists in "%s"', $key, self::class));
             }
 
-            if (self::FUNCTION_OPERATOR_NAME === $key and $value) {
+            if (self::FUNCTION_OPERATOR_NAME === $key && $value) {
                 if (!isset($value[self::FUNCTION_OPERATOR_DEFINITION_NAME])) {
                     throw new ContainerException('Function was not defined');
                 }
@@ -119,10 +119,10 @@ class Condition implements ConditionInterface
             }
 
             if (self::COMPARISON_OPERATOR_NAME === $key) {
-                if (!$value and !isset($data[self::FUNCTION_OPERATOR_NAME][self::FUNCTION_OPERATOR_DEFINITION_NAME])) {
+                if (!$value && !isset($data[self::FUNCTION_OPERATOR_NAME][self::FUNCTION_OPERATOR_DEFINITION_NAME])) {
                     throw new ContainerException('Comparison operator was not defined and Function was not defined');
                 }
-                if ($value and !isset(self::COMPARISON_OPERATORS[$value])) {
+                if ($value && !isset(self::COMPARISON_OPERATORS[$value])) {
                     throw new ContainerException(sprintf('Comparison operator "%s" not supported', $value));
                 }
             }

@@ -129,7 +129,7 @@ abstract class AbstractQueryBuilder
                 $field = [$field];
             }
             $property = array_shift($field);
-            if (!in_array($property, $this->aliasMapping) and isset($this->aliasMapping[$property])) {
+            if (!in_array($property, $this->aliasMapping) && isset($this->aliasMapping[$property])) {
                 $property = $this->aliasMapping[$property];
             }
             $direction = $field ? array_shift($field) : 'ASC';
@@ -170,9 +170,9 @@ abstract class AbstractQueryBuilder
                     "%s %s %s",
                     "SELECT a.attname FROM pg_index i",
                     "JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)",
-                    "WHERE  i.indrelid = '".$rootEntity."'::regclass AND i.indisprimary"
+                    "WHERE  i.indrelid = ?::regclass AND i.indisprimary"
                 );
-                $stmt = $connection->executeQuery($query);
+                $stmt = $connection->executeQuery($query, [$rootEntity], [\PDO::PARAM_STR]);
 
                 return $stmt->fetchColumn();
             case 'mysql':
@@ -180,10 +180,14 @@ abstract class AbstractQueryBuilder
                     "%s %s %s %s",
                     "SELECT k.column_name FROM information_schema.table_constraints t",
                     "JOIN information_schema.key_column_usage k USING(constraint_name,table_schema,table_name)",
-                    "WHERE t.constraint_type='PRIMARY KEY' AND t.table_schema='".$connection->getDatabase()."'",
-                    "AND t.table_name='".$rootEntity."';"
+                    "WHERE t.constraint_type='PRIMARY KEY' AND t.table_schema=?",
+                    "AND t.table_name=?;"
                 );
-                $stmt = $connection->executeQuery($query);
+                $stmt = $connection->executeQuery(
+                    $query,
+                    [$rootEntity, $connection->getDatabase()],
+                    [\PDO::PARAM_STR, \PDO::PARAM_STR]
+                );
 
                 return $stmt->fetchColumn();
             case 'sqlite':

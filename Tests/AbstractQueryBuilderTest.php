@@ -152,6 +152,7 @@ abstract class AbstractQueryBuilderTest extends TestCase
             $config = Setup::createAnnotationMetadataConfiguration([__DIR__.'/Entity'], true, null, null, false);
             $this->em = EntityManager::create($this->dbParams, $config);
             $this->assertInstanceOf(EntityManager::class, $this->em);
+            $this->em->getConnection()->getDatabasePlatform()->registerDoctrineTypeMapping('tsvector', 'string');
             if (!Type::hasType('tsvector')) {
                 Type::addType('tsvector', 'Tests\Doctrine\TsvectorType');
                 $this->em->getConnection()->getDatabasePlatform()->registerDoctrineTypeMapping(
