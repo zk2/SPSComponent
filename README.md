@@ -9,6 +9,8 @@ Zk2\SpsComponent
 [![License](https://poser.pugx.org/zk2/sps-component/license)](https://packagist.org/packages/zk2/sps-component)
 [![composer.lock](https://poser.pugx.org/zk2/sps-component/composerlock)](https://packagist.org/packages/zk2/sps-component)
 
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/92f7ddd4-00d9-4e2b-ad23-ce633fbcf8d4/big.png)](https://insight.sensiolabs.com/projects/92f7ddd4-00d9-4e2b-ad23-ce633fbcf8d4)
+
 Often there is a need to provide the end user with the possibility of complex filtering any data.
 It is quite problematic to correctly place parentheses in the AND / OR set.
 It is even more problematic to filter / sort by value from the aggregating function.
