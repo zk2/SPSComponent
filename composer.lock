@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "ea470308b499352043bc9dcc56e21661",
+    "content-hash": "66c1fb070efd38cb9bd0bb1dc492af04",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -882,12 +882,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/djoos/Symfony-coding-standard.git",
-                "reference": "5e2631cd6b5ea0656b8801aee4443740c84f9ec6"
+                "reference": "b6209fe525a8119b5923ee94023cb26a71953038"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/djoos/Symfony-coding-standard/zipball/5e2631cd6b5ea0656b8801aee4443740c84f9ec6",
-                "reference": "5e2631cd6b5ea0656b8801aee4443740c84f9ec6",
+                "url": "https://api.github.com/repos/djoos/Symfony-coding-standard/zipball/b6209fe525a8119b5923ee94023cb26a71953038",
+                "reference": "b6209fe525a8119b5923ee94023cb26a71953038",
                 "shasum": ""
             },
             "require": {
@@ -921,7 +921,7 @@
                 "phpcs",
                 "symfony"
             ],
-            "time": "2017-10-12T09:13:49+00:00"
+            "time": "2017-11-09T12:15:48+00:00"
         },
         {
             "name": "monolog/monolog",

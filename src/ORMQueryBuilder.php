@@ -28,7 +28,6 @@ use Zk2\SpsComponent\Condition\ContainerInterface;
  */
 class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterface
 {
-
     /**
      * @var ArrayCollection|Parameter[]
      */
@@ -199,40 +198,10 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
      * @param ContainerInterface $container
      *
      * @return string
-     */
-    private function doBuildWhere(ContainerInterface $container)
-    {
-        $condition = '';
-        if ($container->getCondition()) {
-            $condition .= $this->buildCondition($container);
-        } else {
-            foreach ($container->getCollectionOfConditions() as $subContainer) {
-                if (ContainerInterface::CONDITION_NAME === $subContainer->getType()) {
-                    $condition .= $this->buildCondition($subContainer);
-                } elseif (ContainerInterface::COLLECTION_NAME === $subContainer->getType()) {
-                    $condition .= $this->doBuildWhere($subContainer);
-                }
-            }
-        }
-        if (!$condition = $this->trimAndOr($condition)) {
-            return null;
-        }
-
-        return sprintf(
-            '%s(%s)',
-            $container->getAndOr() ? sprintf(' %s ', $container->getAndOr()) : null,
-            $condition
-        );
-    }
-
-    /**
-     * @param ContainerInterface $container
-     *
-     * @return string
      *
      * @throws ContainerException
      */
-    private function buildCondition(ContainerInterface $container)
+    protected function buildCondition(ContainerInterface $container)
     {
         if (!$condition = $container->getCondition()) {
             throw new ContainerException('Condition is empty');
@@ -245,10 +214,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
             $where = $this->aggregate($condition);
         } else {
             $where = $condition->buildCondition();
-            foreach ($condition->getParameters() as $paramName => $paramValue) {
-                $parameter = new Parameter($paramName, $paramValue);
-                $this->parameters->add($parameter);
-            }
+            $this->addParameter($condition->getParameters());
         }
         if (!$where = $this->trimAndOr($where)) {
             return null;
@@ -262,11 +228,22 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
     }
 
     /**
+     * @param array $parameters
+     */
+    protected function addParameter(array $parameters)
+    {
+        foreach ($parameters as $paramName => $paramValue) {
+            $parameter = new Parameter($paramName, $paramValue);
+            $this->parameters->add($parameter);
+        }
+    }
+
+    /**
      * @param ConditionInterface $condition
      *
      * @return string
      */
-    private function aggregate(ConditionInterface $condition)
+    protected function aggregate(ConditionInterface $condition)
     {
         if (!$condition->getParameters()) {
             return '';

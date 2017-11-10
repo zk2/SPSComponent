@@ -49,6 +49,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
      */
     public function buildWhere(ContainerInterface $container)
     {
+        $this->initRoot();
         $condition = $this->doBuildWhere($container);
         if ($this->condition = $this->trimAndOr($condition)) {
             $this->queryBuilder->andWhere($this->condition);
@@ -120,41 +121,10 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
      * @param ContainerInterface $container
      *
      * @return string
-     */
-    private function doBuildWhere(ContainerInterface $container)
-    {
-        $this->initRoot();
-        $condition = '';
-        if ($container->getCondition()) {
-            $condition .= $this->buildCondition($container);
-        } else {
-            foreach ($container->getCollectionOfConditions() as $subContainer) {
-                if (ContainerInterface::CONDITION_NAME === $subContainer->getType()) {
-                    $condition .= $this->buildCondition($subContainer);
-                } elseif (ContainerInterface::COLLECTION_NAME === $subContainer->getType()) {
-                    $condition .= $this->doBuildWhere($subContainer);
-                }
-            }
-        }
-        if (!$condition = $this->trimAndOr($condition)) {
-            return null;
-        }
-
-        return sprintf(
-            '%s(%s)',
-            $container->getAndOr() ? sprintf(' %s ', $container->getAndOr()) : null,
-            $condition
-        );
-    }
-
-    /**
-     * @param ContainerInterface $container
-     *
-     * @return string
      *
      * @throws ContainerException
      */
-    private function buildCondition(ContainerInterface $container)
+    protected function buildCondition(ContainerInterface $container)
     {
         if (!$condition = $container->getCondition()) {
             throw new ContainerException('Condition is empty');
@@ -167,10 +137,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
             $where = $this->aggregate($condition);
         } else {
             $where = $condition->buildCondition();
-            foreach ($condition->getParameters() as $paramName => $paramValue) {
-                $this->parameters[$paramName] = $paramValue;
-                $this->parametersTypes[$paramName] = $this->inferType($paramValue);
-            }
+            $this->addParameter($condition->getParameters());
         }
         if (!$where = $this->trimAndOr($where)) {
             return null;
@@ -184,11 +151,22 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
     }
 
     /**
+     * @param array $parameters
+     */
+    protected function addParameter(array $parameters)
+    {
+        foreach ($parameters as $paramName => $paramValue) {
+            $this->parameters[$paramName] = $paramValue;
+            $this->parametersTypes[$paramName] = $this->inferType($paramValue);
+        }
+    }
+
+    /**
      * @param ConditionInterface $condition
      *
      * @return string
      */
-    private function aggregate(ConditionInterface $condition)
+    protected function aggregate(ConditionInterface $condition)
     {
         if (!$condition->getParameters()) {
             return '';

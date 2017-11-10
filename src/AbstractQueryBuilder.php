@@ -10,15 +10,24 @@
 
 namespace Zk2\SpsComponent;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder as DBALQueryBuilder;
+use Doctrine\ORM\Query\Parameter;
 use Doctrine\ORM\QueryBuilder as ORMQueryBuilder;
+use Zk2\SpsComponent\Condition\ConditionInterface;
+use Zk2\SpsComponent\Condition\ContainerException;
+use Zk2\SpsComponent\Condition\ContainerInterface;
 
 /**
  * Class AbstractQueryBuilder
  */
 abstract class AbstractQueryBuilder
 {
+    /**
+     * @var array|ArrayCollection|Parameter[]
+     */
+    protected $parameters;
     /**
      * @var ORMQueryBuilder|DBALQueryBuilder
      */
@@ -252,6 +261,81 @@ abstract class AbstractQueryBuilder
 
         return $this;
     }
+
+    /**
+     * @param ContainerInterface $container
+     *
+     * @return string
+     */
+    protected function doBuildWhere(ContainerInterface $container)
+    {
+        $condition = '';
+        if ($container->getCondition()) {
+            $condition .= $this->buildCondition($container);
+        } else {
+            foreach ($container->getCollectionOfConditions() as $subContainer) {
+                if (ContainerInterface::CONDITION_NAME === $subContainer->getType()) {
+                    $condition .= $this->buildCondition($subContainer);
+                } elseif (ContainerInterface::COLLECTION_NAME === $subContainer->getType()) {
+                    $condition .= $this->doBuildWhere($subContainer);
+                }
+            }
+        }
+        if (!$condition = $this->trimAndOr($condition)) {
+            return null;
+        }
+
+        return sprintf(
+            '%s(%s)',
+            $container->getAndOr() ? sprintf(' %s ', $container->getAndOr()) : null,
+            $condition
+        );
+    }
+
+    /**
+     * @param ContainerInterface $container
+     *
+     * @return string
+     *
+     * @throws ContainerException
+     */
+    protected function buildCondition(ContainerInterface $container)
+    {
+        if (!$condition = $container->getCondition()) {
+            throw new ContainerException('Condition is empty');
+        }
+
+        $suffix = $this->parameters->count() + 1;
+        $condition->reconfigureParameters($suffix);
+
+        if ($condition->isAggregateFunction()) {
+            $where = $this->aggregate($condition);
+        } else {
+            $where = $condition->buildCondition();
+            foreach ($condition->getParameters() as $paramName => $paramValue) {
+                $parameter = new Parameter($paramName, $paramValue);
+                $this->parameters->add($parameter);
+            }
+        }
+        if (!$where = $this->trimAndOr($where)) {
+            return null;
+        }
+
+        return sprintf(
+            '%s%s',
+            $container->getAndOr() ? sprintf(' %s ', $container->getAndOr()) : null,
+            $where
+        );
+    }
+
+    abstract protected function addParameter(array $parameters);
+
+    /**
+     * @param ConditionInterface $condition
+     *
+     * @return string
+     */
+    abstract protected function aggregate(ConditionInterface $condition);
 
     /**
      * @param ORMQueryBuilder|DBALQueryBuilder $qb

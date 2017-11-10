@@ -148,4 +148,4 @@ Structure of the ``LIMIT OFFSET`` definition:
         ->buildWhere($container)
         ->buildOrderBy($orderBy);
 
-    $result = $query->getResult(30, 50); // ``LIMIT 30 OFFSET 50``
+    $result = $query->getResult(30, 50); // LIMIT 30 OFFSET 50
