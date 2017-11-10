@@ -21,7 +21,9 @@ Documentation
 -------------
 
 [Quick start](https://github.com/zk2/SPSComponent/blob/master/doc/quick_start.rst)
+
 [Definitions](https://github.com/zk2/SPSComponent/blob/master/doc/definitions.rst)
+
 [Usage](https://github.com/zk2/SPSComponent/blob/master/doc/usage.rst)
 
 Running the Tests
