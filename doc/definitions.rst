@@ -3,11 +3,11 @@ Definitions
 
 Structure of the filter definition array (Container):
 -----------------------------------------------------
-A container can have one of two properties: a condition or a collection.
-A collection is a collection of containers, each of which also has a condition or collection, and so on to "infinity".
-In addition, the collection has the `andOrOperator` (AND | OR) property to define the condition for the previous collection.
-A condition is a field, an operator, a value.
-Nesting conditions in the collection and determines the correct arrangement of brackets in the final SQL query.
+    - A container can have one of two properties: a condition or a collection.
+    - A collection is a collection of containers, each of which also has a condition or collection, and so on to "infinity".
+    - In addition, the collection has the `andOrOperator` (AND | OR) property to define the condition for the previous collection.
+    - A condition is a field, an operator, a value.
+    - Nesting conditions in the collection and determines the correct arrangement of brackets in the final SQL query.
 
 **Condition structure:**
 
