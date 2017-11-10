@@ -1,3 +1,6 @@
+Quick start
+===========
+
 Let our application have the following QueryBuilder:
 
 .. code-block:: php
