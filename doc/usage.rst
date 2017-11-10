@@ -1,7 +1,7 @@
 Usage
 =====
 
-As already mentioned, sps-component uses the `Doctrine\DBAL\Query\QueryBuilder` or `Doctrine\ORM\QueryBuilder`.
+As already mentioned, sps-component uses the ``Doctrine\DBAL\Query\QueryBuilder`` or ``Doctrine\ORM\QueryBuilder``.
 There are small nuances of using each of them:
     - ``ORM QueryBuilder`` uses DQL and returns array of objects or array of strings.
       In the case of objects, you can use not only properties in the table columns, but also methods
