@@ -416,7 +416,6 @@ abstract class AbstractQueryBuilder
                 return preg_replace(
                     '/ {2,}/',
                     ' ',
-                    //strtolower(str_replace([' AS ', ' as ', ' HIDDEN '], [' ', ' ', ' '], $str))
                     str_replace([' AS ', ' as ', ' HIDDEN '], [' ', ' ', ' '], $str)
                 );
             },

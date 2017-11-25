@@ -126,9 +126,9 @@ Structure of the ``ORDER BY`` definition array:
 
     $orderBy = [
         [
-            'country.name', \\ field
-            'asc', \\ asc|desc (default asc)
-            'lower' \\ SQL function (optional)
+            'country.name', // field
+            'asc', // asc|desc (default asc)
+            'lower' // SQL function (optional)
         ],
         [
             'country.population',

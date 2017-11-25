@@ -13,6 +13,9 @@ namespace Tests\Doctrine;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
 
+/**
+ * Class TsvectorType
+ */
 class TsvectorType extends Type
 {
     const TSVECTOR = 'tsvector';

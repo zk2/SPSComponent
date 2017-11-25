@@ -13,7 +13,7 @@ variables:
   DOCKER_COMPOSE: "docker-compose -f docker-compose.yml"
 
 services:
-  - docker:dind
+  - docker:stable-dind
 
 
 lint_php:
