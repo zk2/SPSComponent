@@ -16,7 +16,7 @@
     }
   ],
   "require": {
-    "php": ">=7.0,<8.0",
+    "php": ">=7.1,<8.0",
     "doctrine/orm": "^2.5",
     "doctrine/dbal": "^2.6",
     "doctrine/annotations": "^1.0",
