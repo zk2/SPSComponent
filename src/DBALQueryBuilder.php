@@ -149,8 +149,8 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
         foreach ($this->getSqlPart($this->queryBuilder, 'join') as $rootAlias => $joinPart) {
             foreach ($joinPart as $subPart) {
                 $subPart['joinCondition'] = str_replace(
-                    [$rootAlias.'.', $subPart['joinAlias'].'.'],
-                    [$prefix.$rootAlias.'.', $prefix.$subPart['joinAlias'].'.'],
+                    [' '.$rootAlias.'.', ' '.$subPart['joinAlias'].'.'],
+                    [' '.$prefix.$rootAlias.'.', ' '.$prefix.$subPart['joinAlias'].'.'],
                     $subPart['joinCondition']
                 );
                 $subPart['joinAlias'] = $prefix.$subPart['joinAlias'];
