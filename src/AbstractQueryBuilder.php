@@ -409,7 +409,7 @@ abstract class AbstractQueryBuilder
     {
         $selects = [];
         foreach ($this->getSqlPart($this->queryBuilder, 'select') as $part) {
-            $selects = array_merge(array_map('trim', explode(',', $part)), $selects);
+            $selects = array_merge($this->separateSelectString($part), $selects);
         }
         $selects = array_map(
             function ($str) {
@@ -422,8 +422,41 @@ abstract class AbstractQueryBuilder
             $selects
         );
         foreach ($selects as $select) {
-            $array = explode(' ', $select);
-            $this->aliasMapping[isset($array[1]) ? $array[1] : $array[0]] = $array[0];
+            $lastSpacePos = strrpos($select, ' ');
+            $body = substr($select, 0, $lastSpacePos);
+            $alias = substr($select, $lastSpacePos + 1);
+            $this->aliasMapping[$alias ?: $body] = $body;
         }
+    }
+
+    /**
+     * @param string $string
+     *
+     * @return array
+     */
+    private function separateSelectString(string $string)
+    {
+        if (false === strpos($string, '(')) {
+            return array_map('trim', explode(',', $string));
+        }
+
+        $opened = $closed = 0;
+        $cnt = mb_strlen($string);
+        $arrayStrings = [];
+        $substring = '';
+
+        for ($i = 0; $i < $cnt; $i ++) {
+            $substring .= $string[$i];
+            if ('(' === $string[$i]) {
+                $opened ++;
+            } elseif (')' === $string[$i]) {
+                $closed ++;
+            } elseif (',' === $string[$i] && $opened === $closed) {
+                $arrayStrings[] = trim($substring);
+            }
+        }
+        $arrayStrings[] = trim($substring);
+
+        return $arrayStrings;
     }
 }
