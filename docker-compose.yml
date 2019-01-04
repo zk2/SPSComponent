@@ -2,7 +2,9 @@ version: '3'
 services:
 
   php:
-    image: gitlab.zeka.guru:11550/root/sps-component/php:latest
+    #image: gitlab.zeka.guru:12050/root/sps-component/php:latest
+    build:
+      context: ./docker/php
     volumes:
       - ./:/var/www
     depends_on:
