@@ -17,14 +17,14 @@
   ],
   "require": {
     "php": ">=7.1,<8.0",
-    "doctrine/orm": "^2.5",
+    "doctrine/orm": "^2.6",
     "doctrine/dbal": "^2.6",
     "doctrine/annotations": "^1.0",
     "doctrine/cache": "^1.6"
   },
   "require-dev": {
-    "phpunit/phpunit": "5.7.*",
-    "symfony/var-dumper": "3.4.*",
+    "phpunit/phpunit": "6.5.*",
+    "symfony/var-dumper": "4.2.*",
     "cobaia/monologdoctrine": "1.0.*",
     "squizlabs/php_codesniffer": "3.*",
     "escapestudios/symfony2-coding-standard": "3.x-dev"
