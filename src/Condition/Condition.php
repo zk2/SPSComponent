@@ -108,7 +108,8 @@ class Condition implements ConditionInterface
      */
     public function setData(array $data)
     {
-        if ($phpFunction = $data[self::PHP_FUNCTION_OPERATOR_NAME][self::FUNCTION_OPERATOR_DEFINITION_NAME]) {
+        $phpFunction = $data[self::PHP_FUNCTION_OPERATOR_NAME][self::FUNCTION_OPERATOR_DEFINITION_NAME] ?? null;
+        if ($phpFunction) {
             if (!function_exists($phpFunction)) {
                 throw new ContainerException(sprintf('PHP function "%s" not exists', $phpFunction));
             }
