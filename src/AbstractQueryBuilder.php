@@ -296,11 +296,9 @@ abstract class AbstractQueryBuilder
      * @param ContainerInterface $container
      *
      * @return string
-     *
-     * @throws ContainerException
      */
-    protected function buildCondition(ContainerInterface $container)
-    {
+    abstract protected function buildCondition(ContainerInterface $container);
+    /*{
         if (!$condition = $container->getCondition()) {
             throw new ContainerException('Condition is empty');
         }
@@ -326,7 +324,7 @@ abstract class AbstractQueryBuilder
             $container->getAndOr() ? sprintf(' %s ', $container->getAndOr()) : null,
             $where
         );
-    }
+    }*/
 
     /**
      * @param array $parameters

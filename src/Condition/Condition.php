@@ -28,8 +28,11 @@ class Condition implements ConditionInterface
         self::TYPE_OPERATOR_NAME       => null,
         self::COMPARISON_OPERATOR_NAME => null,
         self::VALUE_OPERATOR_NAME      => null,
-        self::FUNCTION_OPERATOR_NAME   => [
-            self::FUNCTION_OPERATOR_AGGREGATE_NAME  => false,
+        self::SQL_FUNCTION_OPERATOR_NAME   => [
+            self::SQL_FUNCTION_OPERATOR_AGGREGATE_NAME  => false,
+            self::FUNCTION_OPERATOR_DEFINITION_NAME => null,
+        ],
+        self::PHP_FUNCTION_OPERATOR_NAME   => [
             self::FUNCTION_OPERATOR_DEFINITION_NAME => null,
         ],
     ];
@@ -85,9 +88,9 @@ class Condition implements ConditionInterface
     /**
      * @return array
      */
-    public function getFunction()
+    public function getSqlFunction()
     {
-        return $this->data[self::FUNCTION_OPERATOR_NAME];
+        return $this->data[self::SQL_FUNCTION_OPERATOR_NAME];
     }
 
     /**
@@ -95,7 +98,7 @@ class Condition implements ConditionInterface
      */
     public function isAggregateFunction()
     {
-        return $this->getFunction() && $this->getFunction()[self::FUNCTION_OPERATOR_AGGREGATE_NAME];
+        return $this->getSqlFunction() && $this->getSqlFunction()[self::SQL_FUNCTION_OPERATOR_AGGREGATE_NAME];
     }
 
     /**
@@ -105,21 +108,31 @@ class Condition implements ConditionInterface
      */
     public function setData(array $data)
     {
+        if ($phpFunction = $data[self::PHP_FUNCTION_OPERATOR_NAME][self::FUNCTION_OPERATOR_DEFINITION_NAME]) {
+            if (!function_exists($phpFunction)) {
+                throw new ContainerException(sprintf('PHP function "%s" not exists', $phpFunction));
+            }
+            try {
+                $data[self::VALUE_OPERATOR_NAME] = call_user_func($phpFunction, $data[self::VALUE_OPERATOR_NAME]);
+            } catch (\Exception $e) {
+                throw new ContainerException($e->getMessage());
+            }
+        }
         $baseParameterName = null;
         foreach ($data as $key => $value) {
             if (!array_key_exists($key, $this->data)) {
                 throw new ContainerException(sprintf('Property "%s" not exists in "%s"', $key, self::class));
             }
 
-            if (self::FUNCTION_OPERATOR_NAME === $key && $value) {
+            if (self::SQL_FUNCTION_OPERATOR_NAME === $key && $value) {
                 if (!isset($value[self::FUNCTION_OPERATOR_DEFINITION_NAME])) {
                     throw new ContainerException('Function was not defined');
                 }
-                $value = array_merge($this->data[self::FUNCTION_OPERATOR_NAME], $value);
+                $value = array_merge($this->data[self::SQL_FUNCTION_OPERATOR_NAME], $value);
             }
 
             if (self::COMPARISON_OPERATOR_NAME === $key) {
-                if (!$value && !isset($data[self::FUNCTION_OPERATOR_NAME][self::FUNCTION_OPERATOR_DEFINITION_NAME])) {
+                if (!$value && !isset($data[self::SQL_FUNCTION_OPERATOR_NAME][self::FUNCTION_OPERATOR_DEFINITION_NAME])) {
                     throw new ContainerException('Comparison operator was not defined and Function was not defined');
                 }
                 if ($value && !isset(self::COMPARISON_OPERATORS[$value])) {
@@ -161,8 +174,6 @@ class Condition implements ConditionInterface
 
     /**
      * @return string
-     *
-     * @throws ContainerException
      */
     public function buildCondition()
     {
@@ -187,8 +198,8 @@ class Condition implements ConditionInterface
                 $parametersByString = key($this->parameters);
         }
 
-        if ($this->getFunction()[self::FUNCTION_OPERATOR_DEFINITION_NAME]) {
-            return $this->getFunctionDefinition($parametersByString);
+        if ($this->getSqlFunction()[self::FUNCTION_OPERATOR_DEFINITION_NAME]) {
+            return $this->getSqlFunctionDefinition($parametersByString);
         }
 
         return sprintf('%s %s', $this->getProperty(), $this->prepareOperatorAndParameter($parametersByString));
@@ -200,9 +211,9 @@ class Condition implements ConditionInterface
      *
      * @return string|null
      */
-    public function getFunctionDefinition($parameterName, $prefix = '')
+    public function getSqlFunctionDefinition($parameterName, $prefix = '')
     {
-        if (!$definition = $this->getFunction()[self::FUNCTION_OPERATOR_DEFINITION_NAME]) {
+        if (!$definition = $this->getSqlFunction()[self::FUNCTION_OPERATOR_DEFINITION_NAME]) {
             return null;
         }
         $definition = str_replace(

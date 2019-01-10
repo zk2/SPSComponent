@@ -78,8 +78,9 @@ interface ConditionInterface
 
     const COMPARISON_OPERATOR_NAME = 'comparisonOperator';
 
-    const FUNCTION_OPERATOR_NAME = 'function';
-    const FUNCTION_OPERATOR_AGGREGATE_NAME = 'aggregate';
+    const SQL_FUNCTION_OPERATOR_NAME = 'sql_function';
+    const PHP_FUNCTION_OPERATOR_NAME = 'php_function';
+    const SQL_FUNCTION_OPERATOR_AGGREGATE_NAME = 'aggregate';
     const FUNCTION_OPERATOR_DEFINITION_NAME = 'definition';
 
     const PROPERTY_OPERATOR_NAME = 'property';
@@ -120,7 +121,7 @@ interface ConditionInterface
     /**
      * @return array|string
      */
-    public function getFunction();
+    public function getSqlFunction();
 
     /**
      * @param array $data
@@ -147,5 +148,5 @@ interface ConditionInterface
      *
      * @return string
      */
-    public function getFunctionDefinition($parameterName, $prefix = '');
+    public function getSqlFunctionDefinition($parameterName, $prefix = '');
 }

@@ -90,7 +90,7 @@ interface QueryBuilderInterface
     /**
      * @param string $func
      *
-     * @return bol
+     * @return bool
      */
     public function isAggFunc($func);
 }

@@ -70,6 +70,9 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
      * @param int $offset
      *
      * @return array
+     *
+     * @throws QueryBuilderException
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getResult($limit = 0, $offset = 0)
     {
@@ -123,7 +126,8 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
                 $types
             );
 
-            $ids = $stmt->fetchAll(\PDO::FETCH_UNIQUE | \PDO::FETCH_COLUMN, 0);
+            $ids = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
+            $ids = array_values(array_unique($ids));
 
             if (!$ids) {
                 return [];
@@ -242,7 +246,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
             $newParameterName = key($newParameters);
         }
 
-        $qb->andHaving($condition->getFunctionDefinition($newParameterName, $prefix))->setParameters([]);
+        $qb->andHaving($condition->getSqlFunctionDefinition($newParameterName, $prefix))->setParameters([]);
 
         foreach ($newParameters as $paramName => $paramValue) {
             $parameter = new Parameter($paramName, $paramValue);
