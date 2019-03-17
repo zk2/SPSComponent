@@ -37,7 +37,7 @@ class PsqlQueryBuilderTest extends AbstractQueryBuilderTest
                 'property'           => 'country.name',
                 'comparisonOperator' => '',
                 'value'              => 'Albania',
-                'function'           => [
+                'sql_function'           => [
                     'aggregate'  => false,
                     'definition' => 'FULL_TEXT_SEARCH({property}, {value}, \'english\') = TRUE',
                 ],
@@ -126,7 +126,7 @@ class PsqlQueryBuilderTest extends AbstractQueryBuilderTest
      */
     public function testDBALQueryBuilder()
     {
-        $this->baseWhereData['collection'][2]['condition']['function']['definition'] =
+        $this->baseWhereData['collection'][2]['condition']['sql_function']['definition'] =
             '{property} @@ to_tsquery( \'english\', {value}) = TRUE';
 
         $this->initLogger('psql_dbal');

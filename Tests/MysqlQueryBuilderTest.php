@@ -37,7 +37,7 @@ class MysqlQueryBuilderTest extends AbstractQueryBuilderTest
                 'property'           => 'country.name,country.localName,country.governmentForm',
                 'comparisonOperator' => '',
                 'value'              => 'Albania',
-                'function'           => [
+                'sql_function'           => [
                     'aggregate'  => false,
                     'definition' => 'FULL_TEXT_SEARCH({property}, {value} \'IN NATURAL MODE\', 0) != 0',
                 ],
@@ -136,7 +136,7 @@ class MysqlQueryBuilderTest extends AbstractQueryBuilderTest
      */
     public function testDBALQueryBuilder()
     {
-        $this->baseWhereData['collection'][2]['condition']['function']['definition'] =
+        $this->baseWhereData['collection'][2]['condition']['sql_function']['definition'] =
             'MATCH ({property}) AGAINST ({value}) != 0';
         $this->baseWhereData['collection'][2]['condition']['property'] =
             'country.name,country.local_name,country.government_form';

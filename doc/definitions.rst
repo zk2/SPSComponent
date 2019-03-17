@@ -17,9 +17,12 @@ Structure of the filter definition array (Container):
          'property'           => 'city.name', // field
          'comparisonOperator' => null, // one of the comparison operators (see below) or null if it is defined in the SQL function
          'value'              => 'united', // the value by which we filter
-         'function'           => [ // SQL function applied to the field
+         'sql_function'           => [ // SQL function applied to the field
              'aggregate'  => false, // if the function is aggregating, then it must be true, otherwise you can not define
-             'definition' => 'MY_FUNCTION({property}, {value}) = TRUE', // the function itself. Tokens ``{property}`` and ``{value}`` will be replaced by a field and value
+             'definition' => 'SQL_FUNCTION({property}, {value}) = TRUE', // the function itself. Tokens ``{property}`` and ``{value}`` will be replaced by a field and value
+         ],
+         'php_function' => [ // PHP function applied to the value
+             'definition' => 'strtolower', // the function itself.
          ],
     ]
 
@@ -58,9 +61,12 @@ Structure of the filter definition array (Container):
                                     'property'           => 'city.name',
                                     'comparisonOperator' => 'endsWith',
                                     'value'              => 'on',
-                                    'function'           => [
+                                    'sql_function'           => [
                                         'aggregate'  => false,
                                         'definition' => 'lower({property})',
+                                    ],
+                                    'php_function' => [
+                                        'definition' => 'strtolower',
                                     ],
                                 ],
                             ],
@@ -70,9 +76,12 @@ Structure of the filter definition array (Container):
                                     'property'           => 'city.name',
                                     'comparisonOperator' => 'in',
                                     'value'              => ['boston', 'new york', 'dallas'],
-                                    'function'           => [
+                                    'sql_function'           => [
                                         'aggregate'  => false,
                                         'definition' => 'lower({property})',
+                                    ],
+                                    'php_function' => [
+                                        'definition' => 'strtolower',
                                     ],
                                 ],
                             ],
@@ -82,7 +91,7 @@ Structure of the filter definition array (Container):
                                     'property'           => 'city.id',
                                     'comparisonOperator' => 'greaterThan',
                                     'value'              => 100,
-                                    'function'           => [
+                                    'sql_function'           => [
                                         'aggregate'  => true,
                                         'definition' => 'count({property})',
                                     ],

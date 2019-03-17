@@ -25,15 +25,18 @@ First you need to define fields for filtering:
     'country' => [
         'property' => 'country.name',
         'comparisonOperator' => ['contains', 'beginsWith', 'endsWith'], // supported operators
-        'function' => [ // SQL function applied to the field (optional)
+        'sql_function' => [ // SQL function applied to the field (optional)
             'aggregate' => false,
             'definition' => 'LOWER({property})',
+        ],
+        'php_function' => [
+            'definition' => 'strtolower',
         ],
     ],
     'cities_count' => [
         'property' => 'city.id',
         'comparisonOperator' => ['equals', 'greaterThan', 'lessThan'],
-        'function' => [
+        'sql_function' => [
             'aggregate' => true,
             'definition' => 'COUNT({property})',
         ],
@@ -66,9 +69,12 @@ on the array of definitions, we get an array like this:
                     'property' => 'country.name',
                     'comparisonOperator' => 'contains',
                     'value' => 'land',
-                    'function' => [
+                    'sql_function' => [
                         'aggregate' => false,
                         'definition' => 'LOWER({property})',
+                    ],
+                    'php_function' => [
+                        'definition' => 'strtolower',
                     ],
                 ],
             ],
@@ -81,9 +87,12 @@ on the array of definitions, we get an array like this:
                             'property' => 'country.name',
                             'comparisonOperator' => 'beginsWith',
                             'value' => 'united',
-                            'function' => [
+                            'sql_function' => [
                                 'aggregate' => false,
                                 'definition' => 'LOWER({property})',
+                            ],
+                            'php_function' => [
+                                'definition' => 'strtolower',
                             ],
                         ],
                     ],
@@ -96,7 +105,7 @@ on the array of definitions, we get an array like this:
                                     'property' => 'city.id',
                                     'comparisonOperator' => 'greaterThan',
                                     'value' => 20,
-                                    'function' => [
+                                    'sql_function' => [
                                         'aggregate' => true,
                                         'definition' => 'COUNT({property})',
                                     ],

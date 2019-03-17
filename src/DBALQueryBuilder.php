@@ -170,7 +170,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
         } else {
             $newParameterName = key($newParameters);
         }
-        $qb->andHaving($condition->getFunctionDefinition($newParameterName, $prefix))->setParameters([]);
+        $qb->andHaving($condition->getSqlFunctionDefinition($newParameterName, $prefix))->setParameters([]);
 
         foreach ($newParameters as $paramName => $paramValue) {
             $this->parameters[$newParameterName] = $paramValue;

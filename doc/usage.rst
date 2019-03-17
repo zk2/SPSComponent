@@ -20,9 +20,12 @@ There are small nuances of using each of them:
                     'property' => 'country.name',
                     'comparisonOperator' => 'contains',
                     'value' => 'land',
-                    'function' => [
+                    'sql_function' => [
                         'aggregate' => false,
                         'definition' => 'LOWER({property})',
+                    ],
+                    'php_function' => [
+                        'definition' => 'strtolower',
                     ],
                 ],
             ],
@@ -35,9 +38,12 @@ There are small nuances of using each of them:
                             'property' => 'country.name',
                             'comparisonOperator' => 'beginsWith',
                             'value' => 'united',
-                            'function' => [
+                            'sql_function' => [
                                 'aggregate' => false,
                                 'definition' => 'LOWER({property})',
+                            ],
+                            'php_function' => [
+                                'definition' => 'strtolower',
                             ],
                         ],
                     ],
@@ -50,7 +56,7 @@ There are small nuances of using each of them:
                                     'property' => 'city.id',
                                     'comparisonOperator' => 'greaterThan',
                                     'value' => 20,
-                                    'function' => [
+                                    'sql_function' => [
                                         'aggregate' => true,
                                         'definition' => 'COUNT({property})',
                                     ],

@@ -97,7 +97,7 @@ abstract class AbstractQueryBuilderTest extends TestCase
                                     'property'           => 'city.name',
                                     'comparisonOperator' => 'endsWith',
                                     'value'              => 'on',
-                                    'function'           => [
+                                    'sql_function'           => [
                                         'aggregate'  => false,
                                         'definition' => 'lower({property})',
                                     ],
@@ -109,7 +109,7 @@ abstract class AbstractQueryBuilderTest extends TestCase
                                     'property'           => 'city.name',
                                     'comparisonOperator' => 'in',
                                     'value'              => ['boston', 'new york', 'dallas'],
-                                    'function'           => [
+                                    'sql_function'           => [
                                         'aggregate'  => false,
                                         'definition' => 'lower({property})',
                                     ],
@@ -121,7 +121,7 @@ abstract class AbstractQueryBuilderTest extends TestCase
                                     'property'           => 'city.id',
                                     'comparisonOperator' => 'greaterThan',
                                     'value'              => 100,
-                                    'function'           => [
+                                    'sql_function'           => [
                                         'aggregate'  => true,
                                         'definition' => 'count({property})',
                                     ],
@@ -549,7 +549,7 @@ abstract class AbstractQueryBuilderTest extends TestCase
                         'property'           => $property,
                         'comparisonOperator' => $comparisonOperator,
                         'value'              => $value,
-                        'function'           => $function,
+                        'sql_function'           => $function,
                     ],
                 ],
             ],
