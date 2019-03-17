@@ -1,4 +1,4 @@
-image: anydasa/docker-git-compose
+image: docker:git
 
 stages:
   - lint
@@ -21,8 +21,8 @@ lint_php:
 #  except:
 #    - master
   script:
-    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - apk add --update py-pip && pip install docker-compose
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - $DOCKER_COMPOSE pull php
     - $DOCKER_COMPOSE up -d
     - docker-compose exec -T php /usr/local/bin/composer install
