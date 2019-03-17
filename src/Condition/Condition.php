@@ -165,7 +165,7 @@ class Condition implements ConditionInterface
                 $i = 0;
                 foreach ($data[self::VALUE_OPERATOR_NAME] as $datum) {
                     $this->parameters[$baseParameterName.'_'.$i] = $datum;
-                    $i ++;
+                    $i++;
                 }
             }
         } else {

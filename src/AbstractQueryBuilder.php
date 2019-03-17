@@ -443,12 +443,12 @@ abstract class AbstractQueryBuilder
         $arrayStrings = [];
         $substring = '';
 
-        for ($i = 0; $i < $cnt; $i ++) {
+        for ($i = 0; $i < $cnt; $i++) {
             $substring .= $string[$i];
             if ('(' === $string[$i]) {
-                $opened ++;
+                $opened++;
             } elseif (')' === $string[$i]) {
-                $closed ++;
+                $closed++;
             } elseif (',' === $string[$i] && $opened === $closed) {
                 $arrayStrings[] = trim($substring);
             }
