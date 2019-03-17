@@ -427,6 +427,8 @@ abstract class AbstractQueryBuilderTest extends TestCase
      * @param ContainerInterface $container
      *
      * @return QueryBuilderInterface
+     *
+     * @throws \Zk2\SpsComponent\QueryBuilderException
      */
     protected function buildOrmQuery(ORMBuilder $ormQb, ContainerInterface $container)
     {
@@ -461,6 +463,8 @@ abstract class AbstractQueryBuilderTest extends TestCase
      * @param ContainerInterface $container
      *
      * @return QueryBuilderInterface
+     *
+     * @throws \Zk2\SpsComponent\QueryBuilderException
      */
     protected function buildDbalQuery(DBALBuilder $dbalQb, ContainerInterface $container)
     {
@@ -513,6 +517,8 @@ abstract class AbstractQueryBuilderTest extends TestCase
 
     /**
      * @param string $fileName
+     *
+     * @throws \Exception
      */
     protected function initLogger($fileName)
     {
@@ -582,6 +588,12 @@ abstract class AbstractQueryBuilderTest extends TestCase
 
     /**
      * loadData
+     *
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\Tools\ToolsException
+     * @throws \Exception
      */
     private function loadData()
     {

@@ -11,6 +11,7 @@
 namespace Zk2\SpsComponent;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query\Expr\Base;
 use Doctrine\ORM\Query\Expr\From;
@@ -50,6 +51,8 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
      * @param ContainerInterface $container
      *
      * @return $this
+     *
+     * @throws QueryBuilderException
      */
     public function buildWhere(ContainerInterface $container)
     {
@@ -271,7 +274,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
                 ->select(sprintf('COUNT(DISTINCT %s)', $this->aliasDotPrimary()));
             try {
                 $this->totalResultCount = $qb->getQuery()->getSingleScalarResult();
-            } catch (NoResultException $e) {
+            } catch (NonUniqueResultException $e) {
                 $this->totalResultCount = 0;
             } catch (\Exception $e) {
                 throw new QueryBuilderException($e->getMessage());
@@ -285,6 +288,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
      * @return $this
      *
      * @throws QueryBuilderException
+     * @throws \Doctrine\ORM\Mapping\MappingException
      */
     private function initRoot()
     {

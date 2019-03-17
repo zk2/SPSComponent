@@ -46,6 +46,8 @@ class FullTextSearchFunction extends FunctionNode
      * @param Parser $parser
      *
      * @throws QueryBuilderException
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Doctrine\ORM\Query\QueryException
      */
     public function parse(Parser $parser)
     {
@@ -100,6 +102,8 @@ class FullTextSearchFunction extends FunctionNode
      * @return string
      *
      * @throws QueryBuilderException
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Doctrine\ORM\Query\AST\ASTException
      */
     public function getSql(SqlWalker $sqlWalker)
     {

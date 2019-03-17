@@ -46,6 +46,9 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
      * @param ContainerInterface $container
      *
      * @return $this
+     *
+     * @throws QueryBuilderException
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function buildWhere(ContainerInterface $container)
     {
@@ -66,6 +69,9 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
      * @param int $offset
      *
      * @return array
+     *
+     * @throws QueryBuilderException
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getResult($limit = 0, $offset = 0)
     {
@@ -184,6 +190,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
      * @return int
      *
      * @throws QueryBuilderException
+     * @throws \Doctrine\DBAL\DBALException
      */
     private function count()
     {
@@ -204,6 +211,9 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
      * @param int $offset
      *
      * @return bool
+     *
+     * @throws QueryBuilderException
+     * @throws \Doctrine\DBAL\DBALException
      */
     private function limitOffset($limit, $offset)
     {
@@ -222,6 +232,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
      * @return $this
      *
      * @throws QueryBuilderException
+     * @throws \Doctrine\DBAL\DBALException
      */
     private function initRoot()
     {

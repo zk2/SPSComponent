@@ -16,7 +16,6 @@ use Doctrine\DBAL\Query\QueryBuilder as DBALQueryBuilder;
 use Doctrine\ORM\Query\Parameter;
 use Doctrine\ORM\QueryBuilder as ORMQueryBuilder;
 use Zk2\SpsComponent\Condition\ConditionInterface;
-use Zk2\SpsComponent\Condition\ContainerException;
 use Zk2\SpsComponent\Condition\ContainerInterface;
 
 /**
@@ -166,6 +165,8 @@ abstract class AbstractQueryBuilder
      * @param string $rootEntity
      *
      * @return null|string
+     *
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getPrimaryKeyName($rootEntity)
     {
@@ -225,6 +226,8 @@ abstract class AbstractQueryBuilder
 
     /**
      * @return string
+     *
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getPlatform()
     {
