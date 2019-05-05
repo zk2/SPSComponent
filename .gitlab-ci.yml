@@ -21,7 +21,7 @@ lint_php:
 #  except:
 #    - master
   script:
-    - apk add --update py-pip && pip install docker-compose
+    - apk add --update py-pip python-dev libffi-dev openssl-dev gcc libc-dev make && pip install docker-compose
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - $DOCKER_COMPOSE pull php
     - $DOCKER_COMPOSE up -d
@@ -39,7 +39,7 @@ test_phpunit:
 #  except:
 #    - master
   script:
-    - apk add --update py-pip && pip install docker-compose
+    - apk add --update py-pip python-dev libffi-dev openssl-dev gcc libc-dev make && pip install docker-compose
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - $DOCKER_COMPOSE pull
     - $DOCKER_COMPOSE up -d
