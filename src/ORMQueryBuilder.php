@@ -33,6 +33,10 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
      * @var ArrayCollection|Parameter[]
      */
     protected $parameters;
+    /**
+     * @var array
+     */
+    protected $originalParameters;
 
     /**
      * ORMQueryBuilder constructor.
@@ -45,6 +49,8 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
     {
         parent::__construct($queryBuilder);
         $this->parameters = new ArrayCollection();
+        $this->originalParameters = $this->queryBuilder->getParameters();
+        $this->originalParametersTypes = $this->queryBuilder->getParameterTypes();
     }
 
     /**
@@ -60,8 +66,8 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
         $condition = $this->doBuildWhere($container);
         if ($this->condition = $this->trimAndOr($condition)) {
             $this->queryBuilder->andWhere($this->condition);
-            if ($this->parameters->count()) {
-                $this->queryBuilder->setParameters($this->parameters);
+            foreach ($this->parameters as $parameter) {
+                $this->queryBuilder->getParameters()->add($parameter);
             }
         }
 

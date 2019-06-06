@@ -32,6 +32,15 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
      * @var array
      */
     protected $parametersTypes = [];
+    /**
+     * @var array
+     */
+    protected $originalParameters;
+
+    /**
+     * @var array
+     */
+    protected $originalParametersTypes = [];
 
     /**
      * @param QueryBuilder $queryBuilder
@@ -40,6 +49,8 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
     {
         parent::__construct($queryBuilder);
         $this->parameters = [];
+        $this->originalParameters = $this->queryBuilder->getParameters();
+        $this->originalParametersTypes = $this->queryBuilder->getParameterTypes();
     }
 
     /**
@@ -57,7 +68,10 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
         if ($this->condition = $this->trimAndOr($condition)) {
             $this->queryBuilder->andWhere($this->condition);
             if (count($this->parameters)) {
-                $this->queryBuilder->setParameters($this->parameters, $this->parametersTypes);
+                $this->queryBuilder->setParameters(
+                    array_merge($this->originalParameters, $this->parameters),
+                    array_merge($this->originalParametersTypes, $this->parametersTypes)
+                );
             }
         }
 
