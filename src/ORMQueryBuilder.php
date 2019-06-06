@@ -50,7 +50,6 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
         parent::__construct($queryBuilder);
         $this->parameters = new ArrayCollection();
         $this->originalParameters = $this->queryBuilder->getParameters();
-        $this->originalParametersTypes = $this->queryBuilder->getParameterTypes();
     }
 
     /**
