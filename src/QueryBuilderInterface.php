@@ -37,12 +37,18 @@ interface QueryBuilderInterface
     public function buildOrderBy(array $fields);
 
     /**
-     * @param int $limit  = 0
-     * @param int $offset = 30
+     * @param int $limit
+     * @param int $offset
+     * @param int $mode
      *
      * @return array
      */
-    public function getResult($limit = 0, $offset = 0);
+    public function getResult($limit, $offset, $mode);
+
+    /**
+     * @param string $functionName
+     */
+    public function addAggregateFunction(string $functionName);
 
     /**
      * @return int

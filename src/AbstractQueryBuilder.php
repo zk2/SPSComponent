@@ -101,9 +101,9 @@ abstract class AbstractQueryBuilder
     protected $aggregateFunctionsNames = ['COUNT', 'SUM', 'MAX', 'MIN', 'AVG'];
 
     /**
-     * @param int  $limit
-     * @param int  $offset
-     * @param null $mode
+     * @param int $limit
+     * @param int $offset
+     * @param int $mode
      *
      * @return mixed
      */
@@ -281,7 +281,7 @@ abstract class AbstractQueryBuilder
     /**
      * @param string $functionName
      */
-    protected function addAggregateFunction(string $functionName)
+    public function addAggregateFunction(string $functionName)
     {
         $this->aggregateFunctionsNames[] = $functionName;
     }
