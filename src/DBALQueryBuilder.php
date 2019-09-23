@@ -12,7 +12,6 @@ namespace Zk2\SpsComponent;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
-use Zk2\SpsComponent\Condition\Condition;
 use Zk2\SpsComponent\Condition\ConditionInterface;
 use Zk2\SpsComponent\Condition\ContainerException;
 use Zk2\SpsComponent\Condition\ContainerInterface;
@@ -57,9 +56,6 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
      * @param ContainerInterface $container
      *
      * @return $this
-     *
-     * @throws QueryBuilderException
-     * @throws \Doctrine\DBAL\DBALException
      */
     public function buildWhere(ContainerInterface $container)
     {
@@ -81,55 +77,35 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
     /**
      * @param int $limit
      * @param int $offset
+     * @param int $mode
      *
      * @return array
-     *
-     * @throws QueryBuilderException
-     * @throws \Doctrine\DBAL\DBALException
      */
-    public function getResult($limit = 0, $offset = 0)
+    public function getResult($limit = 0, $offset = 0, $mode = \PDO::FETCH_ASSOC)
     {
         if ($limit > 0 && false === $this->limitOffset($limit, $offset)) {
             return [];
         }
 
         $stmt = $this->queryBuilder->execute();
-        $this->result = $stmt->fetchAll();
+        $this->result = $stmt->fetchAll($mode);
 
         return $this->result;
     }
 
     /**
      * @param ContainerInterface $container
+     * @param int                $suffix
      *
      * @return string
      *
      * @throws ContainerException
      */
-    protected function buildCondition(ContainerInterface $container)
+    protected function buildCondition(ContainerInterface $container, $suffix = 0)
     {
-        if (!$condition = $container->getCondition()) {
-            throw new ContainerException('Condition is empty');
-        }
-
         $suffix = count($this->parameters) + 1;
-        $condition->reconfigureParameters($suffix);
 
-        if ($condition->isAggregateFunction()) {
-            $where = $this->aggregate($condition);
-        } else {
-            $where = $condition->buildCondition();
-            $this->addParameter($condition->getParameters());
-        }
-        if (!$where = $this->trimAndOr($where)) {
-            return null;
-        }
-
-        return sprintf(
-            '%s%s',
-            $container->getAndOr() ? sprintf(' %s ', $container->getAndOr()) : null,
-            $where
-        );
+        return parent::buildCondition($container, $suffix);
     }
 
     /**
@@ -180,21 +156,11 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
             }
         }
 
-        $newParameters = [];
-        foreach ($condition->getParameters() as $paramName => $paramValue) {
-            $newParameters[str_replace(':', ':'.$prefix, $paramName)] = $paramValue;
-        }
+        $newParameters = $this->paramForAggregate($qb, $condition, $prefix);
 
-        if (count($newParameters) === 2 && stripos($condition->getComparisonOperator(), Condition::BETWEEN) !== false) {
-            $newParameterName = implode(' AND ', array_keys($newParameters));
-        } else {
-            $newParameterName = key($newParameters);
-        }
-        $qb->andHaving($condition->getSqlFunctionDefinition($newParameterName, $prefix))->setParameters([]);
-
-        foreach ($newParameters as $paramName => $paramValue) {
-            $this->parameters[$newParameterName] = $paramValue;
-            $this->parametersTypes[$newParameterName] = $this->inferType($paramValue);
+        foreach ($newParameters['params'] as $paramName => $paramValue) {
+            $this->parameters[$newParameters['name']] = $paramValue;
+            $this->parametersTypes[$newParameters['name']] = $this->inferType($paramValue);
         }
 
         return sprintf('%s IN(%s)', $this->aliasDotPrimary(), $qb->getSQL());
@@ -202,9 +168,6 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
 
     /**
      * @return int
-     *
-     * @throws QueryBuilderException
-     * @throws \Doctrine\DBAL\DBALException
      */
     private function count()
     {
@@ -225,9 +188,6 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
      * @param int $offset
      *
      * @return bool
-     *
-     * @throws QueryBuilderException
-     * @throws \Doctrine\DBAL\DBALException
      */
     private function limitOffset($limit, $offset)
     {
@@ -246,7 +206,6 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
      * @return $this
      *
      * @throws QueryBuilderException
-     * @throws \Doctrine\DBAL\DBALException
      */
     private function initRoot()
     {

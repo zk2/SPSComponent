@@ -11,15 +11,14 @@
 namespace Zk2\SpsComponent;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query\Expr\Base;
 use Doctrine\ORM\Query\Expr\From;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Query\Expr\OrderBy;
 use Doctrine\ORM\Query\Parameter;
 use Doctrine\ORM\QueryBuilder;
-use Zk2\SpsComponent\Condition\Condition;
 use Zk2\SpsComponent\Condition\ConditionInterface;
 use Zk2\SpsComponent\Condition\ContainerException;
 use Zk2\SpsComponent\Condition\ContainerInterface;
@@ -42,8 +41,6 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
      * ORMQueryBuilder constructor.
      *
      * @param QueryBuilder $queryBuilder
-     *
-     * @throws QueryBuilderException
      */
     public function __construct(QueryBuilder $queryBuilder)
     {
@@ -76,13 +73,13 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
     /**
      * @param int $limit
      * @param int $offset
+     * @param int $mode
      *
      * @return array
      *
      * @throws QueryBuilderException
-     * @throws \Doctrine\DBAL\DBALException
      */
-    public function getResult($limit = 0, $offset = 0)
+    public function getResult($limit = 0, $offset = 0, $mode = AbstractQuery::HYDRATE_OBJECT)
     {
         $this->count();
         $this->queryBuilder->setFirstResult($offset)->setMaxResults($limit);
@@ -151,7 +148,7 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
         foreach ($this->hints as $name => $hint) {
             $query->setHint($name, $hint);
         }
-        $this->result = $query->getResult();
+        $this->result = $query->getResult($mode);
         if (!$this->totalResultCount) {
             $this->totalResultCount = count($this->result);
         }
@@ -161,35 +158,17 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
 
     /**
      * @param ContainerInterface $container
+     * @param int                $suffix
      *
      * @return string
      *
      * @throws ContainerException
      */
-    protected function buildCondition(ContainerInterface $container)
+    protected function buildCondition(ContainerInterface $container, $suffix = 0)
     {
-        if (!$condition = $container->getCondition()) {
-            throw new ContainerException('Condition is empty');
-        }
-
         $suffix = $this->parameters->count() + 1;
-        $condition->reconfigureParameters($suffix);
 
-        if ($condition->isAggregateFunction()) {
-            $where = $this->aggregate($condition);
-        } else {
-            $where = $condition->buildCondition();
-            $this->addParameter($condition->getParameters());
-        }
-        if (!$where = $this->trimAndOr($where)) {
-            return null;
-        }
-
-        return sprintf(
-            '%s%s',
-            $container->getAndOr() ? sprintf(' %s ', $container->getAndOr()) : null,
-            $where
-        );
+        return parent::buildCondition($container, $suffix);
     }
 
     /**
@@ -243,20 +222,9 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
             }
         }
 
-        $newParameters = [];
-        foreach ($condition->getParameters() as $paramName => $paramValue) {
-            $newParameters[str_replace(':', ':'.$prefix, $paramName)] = $paramValue;
-        }
+        $newParameters = $this->paramForAggregate($qb, $condition, $prefix);
 
-        if (count($newParameters) === 2 && stripos($condition->getComparisonOperator(), Condition::BETWEEN) !== false) {
-            $newParameterName = implode(' AND ', array_keys($newParameters));
-        } else {
-            $newParameterName = key($newParameters);
-        }
-
-        $qb->andHaving($condition->getSqlFunctionDefinition($newParameterName, $prefix))->setParameters([]);
-
-        foreach ($newParameters as $paramName => $paramValue) {
+        foreach ($newParameters['params'] as $paramName => $paramValue) {
             $parameter = new Parameter($paramName, $paramValue);
             $this->parameters->add($parameter);
         }
@@ -293,7 +261,6 @@ class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterf
      * @return $this
      *
      * @throws QueryBuilderException
-     * @throws \Doctrine\ORM\Mapping\MappingException
      */
     private function initRoot()
     {

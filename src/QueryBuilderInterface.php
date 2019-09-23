@@ -17,8 +17,6 @@ use Zk2\SpsComponent\Condition\ContainerInterface;
  */
 interface QueryBuilderInterface
 {
-    const AGGREGATE_FUNCTIONS = ['COUNT', 'SUM', 'MAX', 'MIN', 'AVG'];
-
     /**
      * @return DBALQueryBuilder|ORMQueryBuilder
      */

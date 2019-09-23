@@ -193,7 +193,7 @@ class Condition implements ConditionInterface
         switch ($this->data[self::COMPARISON_OPERATOR_NAME]) {
             case self::TOKEN_BETWEEN:
             case self::TOKEN_NOT_BETWEEN:
-                $parametersByString = implode(' AND ', array_keys($this->parameters));
+                $parametersByString = implode(array_keys($this->parameters), ' AND ');
                 break;
             default:
                 $parametersByString = key($this->parameters);

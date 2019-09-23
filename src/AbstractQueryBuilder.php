@@ -15,7 +15,9 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder as DBALQueryBuilder;
 use Doctrine\ORM\Query\Parameter;
 use Doctrine\ORM\QueryBuilder as ORMQueryBuilder;
+use Zk2\SpsComponent\Condition\Condition;
 use Zk2\SpsComponent\Condition\ConditionInterface;
+use Zk2\SpsComponent\Condition\ContainerException;
 use Zk2\SpsComponent\Condition\ContainerInterface;
 
 /**
@@ -27,6 +29,7 @@ abstract class AbstractQueryBuilder
      * @var array|ArrayCollection|Parameter[]
      */
     protected $parameters;
+
     /**
      * @var ORMQueryBuilder|DBALQueryBuilder
      */
@@ -91,6 +94,20 @@ abstract class AbstractQueryBuilder
      * @var array
      */
     protected $aliasMapping = [];
+
+    /**
+     * @var array
+     */
+    protected $aggregateFunctionsNames = ['COUNT', 'SUM', 'MAX', 'MIN', 'AVG'];
+
+    /**
+     * @param int  $limit
+     * @param int  $offset
+     * @param null $mode
+     *
+     * @return mixed
+     */
+    abstract public function getResult($limit, $offset, $mode);
 
     /**
      * @param ORMQueryBuilder|DBALQueryBuilder $queryBuilder
@@ -158,15 +175,13 @@ abstract class AbstractQueryBuilder
      */
     public function isAggFunc($func)
     {
-        return preg_match('/'.implode('\(|', QueryBuilderInterface::AGGREGATE_FUNCTIONS).'\(/i', $func);
+        return preg_match('/'.implode($this->aggregateFunctionsNames, '\(|').'\(/i', $func);
     }
 
     /**
      * @param string $rootEntity
      *
      * @return null|string
-     *
-     * @throws \Doctrine\DBAL\DBALException
      */
     public function getPrimaryKeyName($rootEntity)
     {
@@ -226,8 +241,6 @@ abstract class AbstractQueryBuilder
 
     /**
      * @return string
-     *
-     * @throws \Doctrine\DBAL\DBALException
      */
     public function getPlatform()
     {
@@ -266,6 +279,14 @@ abstract class AbstractQueryBuilder
     }
 
     /**
+     * @param string $functionName
+     */
+    protected function addAggregateFunction(string $functionName)
+    {
+        $this->aggregateFunctionsNames[] = $functionName;
+    }
+
+    /**
      * @param ContainerInterface $container
      *
      * @return string
@@ -297,26 +318,23 @@ abstract class AbstractQueryBuilder
 
     /**
      * @param ContainerInterface $container
+     * @param int                $suffix
      *
      * @return string
+     * @throws ContainerException
      */
-    abstract protected function buildCondition(ContainerInterface $container);
-    /*{
+    protected function buildCondition(ContainerInterface $container, $suffix = 0)
+    {
         if (!$condition = $container->getCondition()) {
             throw new ContainerException('Condition is empty');
         }
-
-        $suffix = $this->parameters->count() + 1;
         $condition->reconfigureParameters($suffix);
 
         if ($condition->isAggregateFunction()) {
             $where = $this->aggregate($condition);
         } else {
             $where = $condition->buildCondition();
-            foreach ($condition->getParameters() as $paramName => $paramValue) {
-                $parameter = new Parameter($paramName, $paramValue);
-                $this->parameters->add($parameter);
-            }
+            $this->addParameter($condition->getParameters());
         }
         if (!$where = $this->trimAndOr($where)) {
             return null;
@@ -327,7 +345,7 @@ abstract class AbstractQueryBuilder
             $container->getAndOr() ? sprintf(' %s ', $container->getAndOr()) : null,
             $where
         );
-    }*/
+    }
 
     /**
      * @param array $parameters
@@ -342,6 +360,30 @@ abstract class AbstractQueryBuilder
      * @return string
      */
     abstract protected function aggregate(ConditionInterface $condition);
+
+    /**
+     * @param ORMQueryBuilder|DBALQueryBuilder $queryBuilder
+     * @param ConditionInterface               $condition
+     * @param string                           $prefix
+     *
+     * @return array
+     */
+    protected function paramForAggregate($queryBuilder, ConditionInterface $condition, string  $prefix)
+    {
+        $newParameters = [];
+        foreach ($condition->getParameters() as $paramName => $paramValue) {
+            $newParameters[str_replace(':', ':'.$prefix, $paramName)] = $paramValue;
+        }
+
+        if (count($newParameters) === 2 && stripos($condition->getComparisonOperator(), Condition::BETWEEN) !== false) {
+            $newParameterName = implode(array_keys($newParameters), ' AND ');
+        } else {
+            $newParameterName = key($newParameters);
+        }
+        $queryBuilder->andHaving($condition->getSqlFunctionDefinition($newParameterName, $prefix))->setParameters([]);
+
+        return ['name' => $newParameterName, 'params' => $newParameters];
+    }
 
     /**
      * @param ORMQueryBuilder|DBALQueryBuilder $qb

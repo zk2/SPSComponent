@@ -126,6 +126,10 @@ The final code will be like this:
     $query = \Zk2\SpsComponent\QueryBuilderFactory::createQueryBuilder($queryBuilder);
     $query
         ->buildWhere($container)
-        ->buildOrderBy(['country.name', 'asc']);
+        ->buildOrderBy(
+            [
+                ['a.name', 'asc'],
+            ]
+        );
 
     $result = $query->getResult($limit, $offset);
