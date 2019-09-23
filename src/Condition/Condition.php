@@ -218,8 +218,8 @@ class Condition implements ConditionInterface
             return null;
         }
         $definition = str_replace(
-            ['{property}', '{value}'],
-            [$prefix.$this->getProperty(), $parameterName],
+            ['{property}', '{currentPrefix}', '{value}'],
+            [$prefix.$this->getProperty(), $prefix, $parameterName],
             $definition
         );
         if ($this->getComparisonOperator()) {
