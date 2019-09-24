@@ -13,8 +13,8 @@ variables:
   DOCKER_COMPOSE: "docker-compose -f docker-compose.yml"
 
 services:
-  - docker:stable-dind
-
+  #- docker:stable-dind
+  - docker:18.09.7-dind
 
 lint_php:
   stage: lint
