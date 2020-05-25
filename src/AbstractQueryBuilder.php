@@ -193,7 +193,7 @@ abstract class AbstractQueryBuilder
                 /** @noinspection SpellCheckingInspection */
                 $query = sprintf(
                     "%s %s %s",
-                    "SELECT a.attname FROM pg_index i",
+                    /** @lang text */"SELECT a.attname FROM pg_index i",
                     "JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)",
                     "WHERE  i.indrelid = ?::regclass AND i.indisprimary"
                 );
@@ -203,7 +203,7 @@ abstract class AbstractQueryBuilder
             case 'mysql':
                 $query = sprintf(
                     "%s %s %s %s",
-                    "SELECT k.column_name FROM information_schema.table_constraints t",
+                    /** @lang text */"SELECT k.column_name FROM information_schema.table_constraints t",
                     "JOIN information_schema.key_column_usage k USING(constraint_name,table_schema,table_name)",
                     "WHERE t.constraint_type='PRIMARY KEY' AND t.table_schema=?",
                     "AND t.table_name=?;"

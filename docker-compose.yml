@@ -2,7 +2,6 @@ version: '3'
 services:
 
   php:
-    image: gitlab.zeka.guru:12050/root/sps-component/php:latest
     build:
       context: ./docker/php
     volumes:
@@ -21,7 +20,7 @@ services:
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
 
   pgsql:
-    image: postgres:9.6-alpine
+    image: postgres:12-alpine
     environment:
       POSTGRES_DB: sps
       POSTGRES_USER: sps

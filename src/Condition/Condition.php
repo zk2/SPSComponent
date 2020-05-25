@@ -24,15 +24,15 @@ class Condition implements ConditionInterface
      * @var array
      */
     private $data = [
-        self::PROPERTY_OPERATOR_NAME   => null,
-        self::TYPE_OPERATOR_NAME       => null,
-        self::COMPARISON_OPERATOR_NAME => null,
-        self::VALUE_OPERATOR_NAME      => null,
-        self::SQL_FUNCTION_OPERATOR_NAME   => [
-            self::SQL_FUNCTION_OPERATOR_AGGREGATE_NAME  => false,
-            self::FUNCTION_OPERATOR_DEFINITION_NAME => null,
+        self::PROPERTY_OPERATOR_NAME     => null,
+        self::TYPE_OPERATOR_NAME         => null,
+        self::COMPARISON_OPERATOR_NAME   => null,
+        self::VALUE_OPERATOR_NAME        => null,
+        self::SQL_FUNCTION_OPERATOR_NAME => [
+            self::SQL_FUNCTION_OPERATOR_AGGREGATE_NAME => false,
+            self::FUNCTION_OPERATOR_DEFINITION_NAME    => null,
         ],
-        self::PHP_FUNCTION_OPERATOR_NAME   => [
+        self::PHP_FUNCTION_OPERATOR_NAME => [
             self::FUNCTION_OPERATOR_DEFINITION_NAME => null,
         ],
     ];

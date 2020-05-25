@@ -64,7 +64,6 @@ class Container implements ContainerInterface
         if (!is_array($data[$type])) {
             throw new ContainerException(sprintf('Parameter "%s" must be array', $type));
         }
-        /** @var Container $mainContainer */
         $mainContainer = new self($type);
         if (isset($data[self::AND_OR_OPERATOR_NAME])) {
             $mainContainer->setAndOr($data[self::AND_OR_OPERATOR_NAME]);

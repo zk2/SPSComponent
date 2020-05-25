@@ -26,7 +26,7 @@ class MysqlQueryBuilderTest extends AbstractQueryBuilderTest
     /**
      * {@inheritdoc}
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         if (!getenv('MySql_host')) {
             $this->markTestSkipped('MySql :: Skipped');

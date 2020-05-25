@@ -26,7 +26,7 @@ class SqliteQueryBuilderTest extends AbstractQueryBuilderTest
     /**
      * {@inheritdoc}
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
     }

@@ -16,7 +16,6 @@ use Tests\Entity\Continent;
 use Tests\Entity\Country;
 use Tests\Entity\CountryLanguage;
 use Tests\Entity\Region;
-use Cobaia\Doctrine\MonologSQLLogger;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Query\Parameter;
@@ -137,7 +136,7 @@ abstract class AbstractQueryBuilderTest extends TestCase
     /**
      * {@inheritdoc}
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         ini_set('memory_limit', '512M');
         if (in_array('-v', $_SERVER['argv'], true)) {
@@ -217,8 +216,8 @@ abstract class AbstractQueryBuilderTest extends TestCase
         $this->assertTrue($qb->totalResultCount() > 0);
         $this->assertTrue(count($result) === 4);
         $this->assertTrue($qb->currentResultCount() === 4);
-        $this->assertContains('SELECT', $ormQb->getDQL());
-        $this->assertContains('SELECT', $ormQb->getQuery()->getSQL());
+        $this->assertStringContainsStringIgnoringCase('SELECT', $ormQb->getDQL());
+        $this->assertStringContainsStringIgnoringCase('SELECT', $ormQb->getQuery()->getSQL());
 
         $this->addToLog('IS NULL :: IS NOT NULL');
         $this->orderByData = [];
@@ -271,8 +270,8 @@ abstract class AbstractQueryBuilderTest extends TestCase
         $this->assertTrue($qb->totalResultCount() > 0);
         $this->assertTrue(count($result) > 0);
         $this->assertTrue($qb->currentResultCount() === 4);
-        $this->assertContains('SELECT', $ormQb->getDQL());
-        $this->assertContains('SELECT', $ormQb->getQuery()->getSQL());
+        $this->assertStringContainsStringIgnoringCase('SELECT', $ormQb->getDQL());
+        $this->assertStringContainsStringIgnoringCase('SELECT', $ormQb->getQuery()->getSQL());
 
         $this->addToLog('IS NULL :: IS NOT NULL');
         $this->orderByData = [];
@@ -359,7 +358,7 @@ abstract class AbstractQueryBuilderTest extends TestCase
         $this->assertTrue($qb->totalResultCount() > 0);
         $this->assertTrue(count($result) > 0);
         $this->assertTrue($qb->currentResultCount() === 4);
-        $this->assertContains('SELECT', $dbalQb->getSQL());
+        $this->assertStringContainsStringIgnoringCase('SELECT', $dbalQb->getSQL());
 
         $this->addToLog('IS NULL :: IS NOT NULL');
         $this->orderByData = [];
@@ -612,7 +611,7 @@ abstract class AbstractQueryBuilderTest extends TestCase
 
             if ('mysql' === $platform) {
                 $this->em->getConnection()->exec(
-                    'ALTER TABLE country ADD FULLTEXT INDEX country_fullindex_idx (name ASC, local_name ASC, government_form ASC)'
+                    /** @lang text */'ALTER TABLE country ADD FULLTEXT INDEX country_fullindex_idx (name ASC, local_name ASC, government_form ASC)'
                 );
             }
 
@@ -656,6 +655,7 @@ abstract class AbstractQueryBuilderTest extends TestCase
             $this->em->flush();
             if ('postgresql' === $platform) {
                 $this->em->getConnection()->exec(
+                    /** @lang text */
                     'UPDATE country SET fts = setweight(to_tsvector(coalesce(name,\'\')), \'A\')
                       || setweight(to_tsvector(coalesce(local_name,\'\')), \'B\')
                       || setweight(to_tsvector(coalesce(government_form,\'\')), \'C\');'

@@ -1,7 +1,6 @@
 image: docker:git
 
 stages:
-  - lint
   - test
 
 cache:
@@ -16,24 +15,6 @@ services:
   #- docker:stable-dind
   - docker:18.09.7-dind
 
-lint_php:
-  stage: lint
-#  except:
-#    - master
-  script:
-    - apk add --update py-pip python-dev libffi-dev openssl-dev gcc libc-dev make && pip install docker-compose
-    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
-    - $DOCKER_COMPOSE pull php
-    - $DOCKER_COMPOSE up -d
-    - docker-compose exec -T php /usr/local/bin/composer install
-    - docker-compose exec -T php /usr/local/bin/composer run phpsniffer-cmd
-    - >
-      if files=$(git diff HEAD~ --name-only --diff-filter=ACMRTUX); then
-        docker-compose exec -T php php -d memory_limit=-1 vendor/squizlabs/php_codesniffer/bin/phpcs $files
-      fi;
-#  allow_failure: true
-
-
 test_phpunit:
   stage: test
 #  except:
@@ -43,7 +24,7 @@ test_phpunit:
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - $DOCKER_COMPOSE pull
     - $DOCKER_COMPOSE up -d
-    - sleep 10
+    - sleep 20
 #    - > # wait for creating Postgres Database
 #      while ! $($DOCKER_COMPOSE exec -T pgsql psql -U postgres -d sps -c "select 1" > /dev/null 2>&1); do
 #        sleep 1;

@@ -26,7 +26,7 @@ class PsqlQueryBuilderTest extends AbstractQueryBuilderTest
     /**
      * {@inheritdoc}
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         if (!getenv('PgSql_host')) {
             $this->markTestSkipped('PgSql :: Skipped');

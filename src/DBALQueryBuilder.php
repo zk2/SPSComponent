@@ -176,7 +176,7 @@ class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInter
             ->setFirstResult(null)
             ->setMaxResults(null);
         $connection = $qb->getConnection();
-        $sql = sprintf("SELECT COUNT(*) FROM (%s) _sps_cnt_", $qb->getSQL());
+        $sql = sprintf(/** @lang text */"SELECT COUNT(*) FROM (%s) _sps_cnt_", $qb->getSQL());
         $stmt = $connection->executeQuery($sql, $qb->getParameters(), $this->parametersTypes);
         $this->totalResultCount = $stmt->fetchColumn();
 

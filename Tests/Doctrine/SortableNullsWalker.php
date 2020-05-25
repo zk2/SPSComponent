@@ -26,9 +26,6 @@ class SortableNullsWalker extends SqlWalker
      * @param OrderByItem $orderByItem
      *
      * @return string
-     *
-     * @throws \Doctrine\DBAL\DBALException
-     * @throws \Doctrine\ORM\Query\QueryException
      */
     public function walkOrderByItem($orderByItem)
     {
