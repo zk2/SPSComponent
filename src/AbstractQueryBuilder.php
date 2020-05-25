@@ -175,7 +175,7 @@ abstract class AbstractQueryBuilder
      */
     public function isAggFunc($func)
     {
-        return preg_match('/'.implode($this->aggregateFunctionsNames, '\(|').'\(/i', $func);
+        return preg_match('/'.implode('\(|', $this->aggregateFunctionsNames).'\(/i', $func);
     }
 
     /**

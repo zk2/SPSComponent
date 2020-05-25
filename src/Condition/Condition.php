@@ -199,7 +199,7 @@ class Condition implements ConditionInterface
                 $parametersByString = key($this->parameters);
         }
 
-        if ($this->getSqlFunction()[self::FUNCTION_OPERATOR_DEFINITION_NAME]) {
+        if ($this->getSqlFunction() && $this->getSqlFunction()[self::FUNCTION_OPERATOR_DEFINITION_NAME]) {
             return $this->getSqlFunctionDefinition($parametersByString);
         }
 
