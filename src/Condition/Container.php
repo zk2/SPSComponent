@@ -58,7 +58,7 @@ class Container implements ContainerInterface
         }
         if (null === $type) {
             throw new ContainerException(
-                sprintf('Invalid container type. Use %s', implode(self::ALLOWED_TYPES, ' or '))
+                sprintf('Invalid container type. Use %s', implode(' or ', self::ALLOWED_TYPES))
             );
         }
         if (!is_array($data[$type])) {
@@ -137,7 +137,7 @@ class Container implements ContainerInterface
         if ($andOr = strtoupper($andOr)) {
             if (!in_array($andOr, self::AND_OR_OPERATORS)) {
                 throw new ContainerException(
-                    sprintf('Invalid operator. Use %s', implode(self::AND_OR_OPERATORS, ' or '))
+                    sprintf('Invalid operator. Use %s', implode(' or ', self::AND_OR_OPERATORS))
                 );
             }
             $this->andOr = $andOr;

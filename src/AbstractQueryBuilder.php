@@ -376,7 +376,7 @@ abstract class AbstractQueryBuilder
         }
 
         if (count($newParameters) === 2 && stripos($condition->getComparisonOperator(), Condition::BETWEEN) !== false) {
-            $newParameterName = implode(array_keys($newParameters), ' AND ');
+            $newParameterName = implode(' AND ', array_keys($newParameters));
         } else {
             $newParameterName = key($newParameters);
         }
