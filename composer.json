@@ -16,7 +16,7 @@
     }
   ],
   "require": {
-    "php": ">=7.1,<8.0",
+    "php": ">=7.1",
     "ext-pdo": "*",
     "doctrine/orm": "^2.6",
     "doctrine/dbal": "^2.6",
