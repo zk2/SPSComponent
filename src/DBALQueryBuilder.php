@@ -21,16 +21,11 @@ use Zk2\SpsComponent\Condition\ContainerInterface;
  */
 class DBALQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterface
 {
-
-    /**
-     * @var array
-     */
-    protected $parameters;
-
     /**
      * @var array
      */
     protected $parametersTypes = [];
+
     /**
      * @var array
      */

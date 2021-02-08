@@ -29,10 +29,6 @@ use Zk2\SpsComponent\Condition\ContainerInterface;
 class ORMQueryBuilder extends AbstractQueryBuilder implements QueryBuilderInterface
 {
     /**
-     * @var ArrayCollection|Parameter[]
-     */
-    protected $parameters;
-    /**
      * @var array
      */
     protected $originalParameters;
